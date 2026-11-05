@@ -598,30 +598,27 @@ function drawCover(ctx, img, x, y, w, h) {
   ctx.drawImage(img, dx, dy, dw, dh);
 }
 
-/* ---------- Canvas 辅助：画发箍（CSS 半圆形底座 + Emoji） ---------- */
+/* ---------- Canvas 辅助：画花环（绿色藤条 + 花朵 + 叶子 + Emoji） ---------- */
 function drawHeadbandOnCanvas(ctx, W, H) {
   const band = $("animal-headband");
   const emojiEl = $("headband-emoji");
   if (!band || band.style.display === "none") return;
 
-  // 当前发箍的 emoji（从 DOM 读，或者从 state.currentKey 读）
   const emoji = emojiEl ? emojiEl.textContent : "🦊";
   if (!emoji) return;
 
-  // 预览容器的实际尺寸
   const container = $("headband-container");
   const rect = container.getBoundingClientRect();
   const cw = rect.width;
   const ch = rect.height;
 
-  // Canvas 像素比
   const PX = W / cw;
   const s = headbandState;
 
-  // 发箍在 Canvas 上的尺寸（CSS 里 width: 45% 容器宽度）
-  const bandW = cw * 0.45 * PX * s.scale;
-  const bandH = bandW * 1.2;  // 高度比宽度略大
-  // 发箍锚点（中心）：posX/posY 是 0-100 百分比
+  // 花环尺寸：CSS width: 45% 容器；高度 = 宽度 * 0.85（更矮更像花环）
+  const ringW = cw * 0.45 * PX * s.scale;
+  const ringH = ringW * 0.55;
+  // 锚点
   const cx = (cw * s.posX / 100) * PX;
   const cy = (ch * s.posY / 100) * PX;
 
@@ -629,54 +626,142 @@ function drawHeadbandOnCanvas(ctx, W, H) {
   ctx.translate(cx, cy);
   ctx.rotate((s.rotate * Math.PI) / 180);
 
-  // ======== 1. 画半圆形发箍底座 ========
-  // 位置：锚点在发箍中心，发箍下半部是半圆形
-  // 所以半圆顶边在 cy - bandH*0.25 处，底边在 cy + bandH*0.75 处
-  const halfW = bandW / 2;
-  const bandTopY = -bandH * 0.25;   // 相对锚点
-  const bandBotY = bandH * 0.55;
-  // 渐变
-  const grad = ctx.createLinearGradient(0, bandTopY, 0, bandBotY);
-  grad.addColorStop(0, "#f5ead2");
-  grad.addColorStop(0.5, "#e8d9b0");
-  grad.addColorStop(1, "#d4c18a");
+  const halfW = ringW / 2;
+  const bandThickness = ringH * 0.28;  // 藤条粗细
 
-  ctx.beginPath();
-  ctx.moveTo(-halfW, bandBotY);
-  ctx.lineTo(-halfW, bandTopY + bandH * 0.1);
-  // 上半圆（从左到右，上凸）
-  ctx.arc(0, bandTopY + bandH * 0.1, halfW, Math.PI, 0, false);
-  ctx.lineTo(halfW, bandBotY);
-  ctx.closePath();
-  ctx.fillStyle = grad;
-  ctx.fill();
-  // 描边
-  ctx.strokeStyle = "#b09a6e";
+  // ======== 1. 画花环（绿色藤条弧形） ========
+  // 阴影层（先画一个偏移的深绿环制造投影）
+  ctx.save();
+  ctx.translate(0, ringH * 0.18);
+  ctx.strokeStyle = "rgba(0,0,0,0.3)";
+  ctx.lineWidth = bandThickness;
+  ctx.lineCap = "round";
+  drawArc(ctx, 0, 0, halfW, ringH, bandThickness);
+  ctx.restore();
+
+  // 藤条主体：用 3 层渐变叠加
+  drawArcGradient(ctx, 0, 0, halfW, ringH, bandThickness,
+    ["#5d8a3e", "#7da84f", "#4a7230", "#3a5d26"]);
+
+  // 藤条高光（顶部亮色细线）
+  ctx.strokeStyle = "rgba(255,255,255,0.35)";
+  ctx.lineWidth = bandThickness * 0.25;
+  drawArcHighlight(ctx, 0, 0, halfW, ringH, bandThickness);
+
+  // 藤条描边
+  ctx.strokeStyle = "#2d4a1a";
   ctx.lineWidth = 2 * s.scale;
-  ctx.stroke();
+  drawArcOutline(ctx, 0, 0, halfW, ringH, bandThickness);
 
-  // ======== 2. 画 Emoji（居中在发箍上半部） ========
-  // emoji 大小 = 发箍宽度的 70%
-  const emojiSize = bandW * 0.7;
+  // ======== 2. 画花朵（沿藤条分布 5 朵） ========
+  drawFlowerCluster(ctx, -halfW * 0.75, ringH * 0.05, "#ff6b8a", "#ffe066", s.scale);
+  drawFlowerCluster(ctx, -halfW * 0.35, -ringH * 0.12, "#ffd700", "#ff6b8a", s.scale);
+  drawFlowerCluster(ctx, 0, -ringH * 0.22, "#b4a0e0", "#fff4b0", s.scale);
+  drawFlowerCluster(ctx, halfW * 0.35, -ringH * 0.12, "#ff8fa3", "#ffe066", s.scale);
+  drawFlowerCluster(ctx, halfW * 0.75, ringH * 0.05, "#ff6b8a", "#ffe066", s.scale);
+
+  // ======== 3. 画小叶子 ========
+  drawLeaf(ctx, -halfW * 0.55, -ringH * 0.18, -20, s.scale);
+  drawLeaf(ctx, -halfW * 0.15, -ringH * 0.28, 25, s.scale);
+  drawLeaf(ctx, halfW * 0.15, -ringH * 0.28, -25, s.scale);
+  drawLeaf(ctx, halfW * 0.55, -ringH * 0.18, 20, s.scale);
+
+  // ======== 4. 画 Emoji（花环顶部中间） ========
+  const emojiSize = ringW * 0.5;
   ctx.font = emojiSize + "px Apple Color Emoji, Segoe UI Emoji, sans-serif";
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  // emoji 位置：发箍顶部偏下一点
-  const emojiY = -bandH * 0.1;
-  ctx.fillText(emoji, 0, emojiY);
+  // 先画阴影层
+  ctx.save();
+  ctx.font = emojiSize + "px sans-serif";
+  // 主 emoji 渲染（Canvas 直接 fillText 不支持彩色 emoji 阴影，跳过）
+  ctx.restore();
+  ctx.fillText(emoji, 0, -ringH * 0.05);
 
-  // ======== 3. 画小花装饰（简化：几个小圆点） ========
-  // 沿半圆底边画几个小粉/黄色圆
-  ctx.fillStyle = "#ff8fa3";
-  for (let i = -3; i <= 3; i++) {
-    const angle = Math.PI + (i + 3) / 6 * Math.PI;  // 从 180° 到 360°
-    const fx = Math.cos(angle) * (halfW - 4);
-    const fy = Math.sin(angle) * (halfW * 0.7) + bandTopY + bandH * 0.1;
+  ctx.restore();
+}
+
+/* --- Canvas 辅助：画弧形 --- */
+function drawArc(ctx, cx, cy, halfW, ringH, thickness) {
+  ctx.beginPath();
+  ctx.arc(cx, cy, halfW, Math.PI, 0, false);
+  ctx.stroke();
+}
+/* 带渐变的弧形 */
+function drawArcGradient(ctx, cx, cy, halfW, ringH, thickness, colors) {
+  // 用 4 段弧分别画，每段渐变
+  const segments = 4;
+  for (let i = 0; i < segments; i++) {
+    const a0 = Math.PI + (i / segments) * Math.PI;
+    const a1 = Math.PI + ((i + 1) / segments) * Math.PI;
     ctx.beginPath();
-    ctx.arc(fx, fy, 3 * s.scale, 0, Math.PI * 2);
+    ctx.strokeStyle = colors[i % colors.length];
+    ctx.lineWidth = thickness;
+    ctx.lineCap = "round";
+    ctx.arc(cx, cy, halfW, a0, a1, false);
+    ctx.stroke();
+  }
+}
+/* 高光细线 */
+function drawArcHighlight(ctx, cx, cy, halfW, ringH, thickness) {
+  ctx.beginPath();
+  ctx.arc(cx, cy, halfW, Math.PI + 0.15, Math.PI - 0.15, true);
+  ctx.stroke();
+}
+/* 外轮廓 */
+function drawArcOutline(ctx, cx, cy, halfW, ringH, thickness) {
+  ctx.beginPath();
+  ctx.lineWidth = thickness + 4;
+  ctx.strokeStyle = "transparent";
+  ctx.arc(cx, cy, halfW, Math.PI, 0, false);
+  ctx.stroke();
+  // 真正的描边用更细的线在藤条两侧
+  ctx.save();
+  ctx.beginPath();
+  ctx.lineWidth = 1.5;
+  ctx.strokeStyle = "#2d4a1a";
+  // 上边缘
+  ctx.beginPath();
+  ctx.arc(cx, cy, halfW, Math.PI, 0, false);
+  ctx.stroke();
+  ctx.restore();
+}
+
+/* --- Canvas 辅助：画 5 瓣小花 --- */
+function drawFlowerCluster(ctx, x, y, petalColor, centerColor, scale) {
+  const r = 7 * scale;
+  ctx.save();
+  ctx.translate(x, y);
+  for (let i = 0; i < 5; i++) {
+    const a = (i * 72 - 90) * Math.PI / 180;
+    const px = Math.cos(a) * r;
+    const py = Math.sin(a) * r;
+    ctx.beginPath();
+    ctx.ellipse(px, py, r * 0.5, r, a, 0, Math.PI * 2);
+    ctx.fillStyle = petalColor;
     ctx.fill();
   }
+  // 花心
+  ctx.beginPath();
+  ctx.arc(0, 0, r * 0.4, 0, Math.PI * 2);
+  ctx.fillStyle = centerColor;
+  ctx.fill();
+  ctx.restore();
+}
 
+/* --- Canvas 辅助：画叶子 --- */
+function drawLeaf(ctx, x, y, rotate, scale) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(rotate * Math.PI / 180);
+  ctx.beginPath();
+  ctx.ellipse(0, 0, 6 * scale, 12 * scale, 0, 0, Math.PI * 2);
+  const grad = ctx.createLinearGradient(-6 * scale, 0, 6 * scale, 0);
+  grad.addColorStop(0, "#3a5d26");
+  grad.addColorStop(0.5, "#7da84f");
+  grad.addColorStop(1, "#4a7230");
+  ctx.fillStyle = grad;
+  ctx.fill();
   ctx.restore();
 }
 

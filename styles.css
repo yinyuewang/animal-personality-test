@@ -644,61 +644,136 @@ html, body {
 }
 .animal-headband:active { cursor: grabbing; }
 
-/* ========= CSS 画的半圆形发箍底座 ========= */
+/* ========= 花环底座（藤条弧形 + 花朵 + 叶子 + 立体光影） ========= */
 .headband-base {
   position: absolute;
-  bottom: 0;
+  bottom: -20%;
   left: 0;
   width: 100%;
-  height: 55%;  /* 发箍占发箍层下半部分 */
-  /* 用 border-radius 画一个半圆形（向上弯） */
-  border-top-left-radius: 50%;
-  border-top-right-radius: 50%;
-  border-bottom-left-radius: 0;
-  border-bottom-right-radius: 0;
-  /* 奶油色 + 渐变 模拟塑料质感 */
+  height: 75%;  /* 花环占发箍层下半部分 */
+  /* 弧形藤条：用 border-radius 画向上弯的半圆环 */
+  border-top-left-radius: 55%;
+  border-top-right-radius: 55%;
+  border-bottom-left-radius: 8%;
+  border-bottom-right-radius: 8%;
+  /* 深绿渐变模拟藤条 */
   background: linear-gradient(
     180deg,
-    #f5ead2 0%,
-    #e8d9b0 50%,
-    #d4c18a 100%
+    #5d8a3e 0%,
+    #7da84f 30%,
+    #4a7230 70%,
+    #3a5d26 100%
   );
-  /* 描边 + 阴影 */
-  border: 2px solid #b09a6e;
+  border: 2.5px solid #2d4a1a;
+  /* 多层阴影制造立体感 */
   box-shadow:
-    /* 内层高光 */
-    inset 0 -4px 8px rgba(255, 255, 255, 0.4),
-    /* 外层投影 */
-    0 4px 12px rgba(0, 0, 0, 0.25);
-}
-/* 发箍内侧的小花装饰（用伪元素） */
-.headband-base::before {
-  content: "🌸 🌼 🌸 🌼 🌸";
-  position: absolute;
-  bottom: 6px;
-  left: 0;
-  right: 0;
-  text-align: center;
-  font-size: 12px;
-  letter-spacing: 4px;
-  opacity: 0.7;
-  white-space: nowrap;
+    /* 内侧高光（顶部亮） */
+    inset 0 3px 6px rgba(255, 255, 255, 0.35),
+    /* 内侧阴影（底部暗） */
+    inset 0 -6px 12px rgba(0, 0, 0, 0.35),
+    /* 外侧投影（让花环"浮"在照片上） */
+    0 6px 16px rgba(0, 0, 0, 0.35),
+    /* 下方模糊大阴影 */
+    0 12px 28px rgba(0, 0, 0, 0.2);
 }
 
-/* ========= 动物 Emoji ========= */
-.headband-emoji {
+/* 花朵装饰（多个伪元素 + 背景径向渐变画小花） */
+.headband-base::before,
+.headband-base::after {
+  content: "";
   position: absolute;
-  top: 0;
+  /* 一朵小花 = 多层 box-shadow 堆出花瓣 */
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #ffe066 30%, transparent 30%);
+  /* 粉色花瓣 + 黄色花心 */
+  box-shadow:
+    0 -10px 0 -2px #ff6b8a,   /* 上花瓣 */
+    10px -5px 0 -2px #ff8fa3, /* 右上花瓣 */
+    10px 5px 0 -2px #ff6b8a,  /* 右下花瓣 */
+    0 10px 0 -2px #ff8fa3,    /* 下花瓣 */
+    -10px 5px 0 -2px #ff6b8a, /* 左下花瓣 */
+    -10px -5px 0 -2px #ff8fa3,/* 左上花瓣 */
+    /* 中心黄色花心 */
+    0 0 0 1.5px #ffe066;
+}
+/* 左花簇 */
+.headband-base::before {
+  left: 8%;
+  bottom: 8%;
+  transform: scale(0.9);
+}
+/* 右花簇（紫色） */
+.headband-base::after {
+  right: 8%;
+  bottom: 10%;
+  transform: scale(0.8);
+  background: radial-gradient(circle, #fff4b0 30%, transparent 30%);
+  box-shadow:
+    0 -10px 0 -2px #b4a0e0,
+    10px -5px 0 -2px #c4b0f0,
+    10px 5px 0 -2px #b4a0e0,
+    0 10px 0 -2px #c4b0f0,
+    -10px 5px 0 -2px #b4a0e0,
+    -10px -5px 0 -2px #c4b0f0,
+    0 0 0 1.5px #fff4b0;
+}
+
+/* ====== 额外小花（用 .headband-extra 类挂在花环层上） ====== */
+.headband-extras {
+  position: absolute;
+  bottom: -15%;
   left: 0;
   right: 0;
-  height: 75%;
+  pointer-events: none;
+}
+.headband-extras .flower {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+.headband-extras .leaf {
+  position: absolute;
+  width: 14px;
+  height: 7px;
+  border-radius: 50%;
+  background: linear-gradient(90deg, #3a5d26, #7da84f);
+  opacity: 0.85;
+}
+
+/* ====== 动物 Emoji（更大更突出） ====== */
+.headband-emoji {
+  position: absolute;
+  top: -10%;
+  left: 0;
+  right: 0;
+  height: 80%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 100%; /* 跟随父元素宽度缩放 */
-  /* 让 emoji 看起来有立体感 */
-  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.3));
+  /* emoji 大小 = 花环层宽度的 55% */
+  font-size: 55%;
+  filter:
+    /* 立体感：右下偏移的投影 */
+    drop-shadow(2px 3px 0 rgba(0, 0, 0, 0.25))
+    drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
   line-height: 1;
+}
+
+/* 花环的"叶子"装饰（用 emoji 伪元素） */
+.headband-leaves {
+  position: absolute;
+  bottom: -25%;
+  left: 0;
+  right: 0;
+  font-size: 14px;
+  letter-spacing: 6px;
+  text-align: center;
+  opacity: 0.8;
+  color: #2d4a1a;
+  text-shadow: 0 1px 2px rgba(255,255,255,0.3);
 }
 
 /* 操作按钮 */
