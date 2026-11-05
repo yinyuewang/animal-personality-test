@@ -633,7 +633,7 @@ function showResult() {
   const scores = computeScores();
   const hilo = {};
   ["S", "E", "O", "C"].forEach(function(d) {
-    hilo[d] = scores[d] >= 7 ? "H" : "L";
+    hilo[d] = scores[d] >= 4 ? "H" : "L"; /* 4 = 该维度至少答对 1/3 的题，视为有明显倾向 */
   });
   const key = "S_" + hilo.S + "_E_" + hilo.E + "_O_" + hilo.O + "_C_" + hilo.C;
   const animal = ANIMALS[key] || ANIMALS["S_L_E_L_O_L_C_L"];
