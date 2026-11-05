@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>动物人格测试 · Animal Personality Test</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- ========== 开始页 ========== -->
+  <section id="page-start" class="page active">
+    <div class="container">
+      <div class="hero">
+        <div class="hero-emoji">🐾</div>
+        <h1 class="hero-title">你是哪种动物？</h1>
+        <p class="hero-sub">
+          基于<strong>大五人格模型</strong>与<strong>动物行为学研究</strong>的人格测试
+        </p>
+        <div class="hero-info">
+          <div class="info-item">
+            <span class="info-num">12</span>
+            <span class="info-label">道题</span>
+          </div>
+          <div class="info-divider"></div>
+          <div class="info-item">
+            <span class="info-num">16</span>
+            <span class="info-label">种动物</span>
+          </div>
+          <div class="info-divider"></div>
+          <div class="info-item">
+            <span class="info-num">4</span>
+            <span class="info-label">个人格维度</span>
+          </div>
+        </div>
+        <button id="btn-start" class="btn btn-primary">开始测试</button>
+        <p class="hero-note">
+          每题选择最接近你的选项，没有对错之分 ✨
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 答题页 ========== -->
+  <section id="page-quiz" class="page">
+    <div class="container">
+      <div class="progress-bar">
+        <div id="progress-fill" class="progress-fill"></div>
+      </div>
+      <div class="progress-label">
+        <span id="current-num">1</span> / <span id="total-num">12</span>
+      </div>
+
+      <div class="question-card">
+        <h2 id="question-text" class="question-text"></h2>
+        <div id="options-wrap" class="options-list"></div>
+      </div>
+
+      <button id="btn-prev" class="btn btn-ghost hidden">上一题</button>
+    </div>
+  </section>
+
+  <!-- ========== 结果页 ========== -->
+  <section id="page-result" class="page">
+    <div class="container">
+      <div id="result-wrap" class="result-wrap"></div>
+      <div class="result-actions">
+        <button id="btn-restart" class="btn btn-primary">再测一次</button>
+        <button id="btn-share" class="btn btn-primary">📷 保存结果图片</button>
+      </div>
+
+      <!-- 维度雷达图区域 -->
+      <div class="dimensions-section">
+        <h3>你的人格维度分布</h3>
+        <div class="dim-bars">
+          <div class="dim-item" data-dim="S">
+            <div class="dim-label">社交驱力 <span class="dim-hint">(外向性)</span></div>
+            <div class="dim-bar"><div class="dim-fill" id="dim-S"></div></div>
+            <div class="dim-score"><span id="score-S">0</span> / 12</div>
+          </div>
+          <div class="dim-item" data-dim="E">
+            <div class="dim-label">情绪反应性 <span class="dim-hint">(神经质)</span></div>
+            <div class="dim-bar"><div class="dim-fill" id="dim-E"></div></div>
+            <div class="dim-score"><span id="score-E">0</span> / 12</div>
+          </div>
+          <div class="dim-item" data-dim="O">
+            <div class="dim-label">探索倾向 <span class="dim-hint">(开放性)</span></div>
+            <div class="dim-bar"><div class="dim-fill" id="dim-O"></div></div>
+            <div class="dim-score"><span id="score-O">0</span> / 12</div>
+          </div>
+          <div class="dim-item" data-dim="C">
+            <div class="dim-label">协作倾向 <span class="dim-hint">(宜人性)</span></div>
+            <div class="dim-bar"><div class="dim-fill" id="dim-C"></div></div>
+            <div class="dim-score"><span id="score-C">0</span> / 12</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 方法论说明 -->
+      <div class="methodology">
+        <details>
+          <summary>🧠 方法论说明（为什么是这 4 个维度？为什么匹配这 16 种动物？）</summary>
+          <div class="methodology-content">
+            <h4>底层框架：大五人格模型</h4>
+            <p>本测试取大五人格（FFM）中的 4 个维度：<strong>社交驱力</strong>（Extraversion）、<strong>情绪反应性</strong>（Neuroticism）、<strong>探索倾向</strong>（Openness）、<strong>协作倾向</strong>（Agreeableness），以控制题目数量并保证测量精度。</p>
+            <h4>动物映射依据</h4>
+            <p>动物匹配严格遵循已发表的行为学研究，基于五大行为轴（Gosling & John 1999；Reale et al. 2007）：</p>
+            <ul>
+              <li>社交驱力 ↔ Sociability（群居性）</li>
+              <li>情绪反应性 ↔ Boldness/Shyness（大胆/羞怯）+ Stress Reactivity</li>
+              <li>探索倾向 ↔ Exploration/Avoidance（探索/回避）</li>
+              <li>协作倾向 ↔ Aggressiveness/Docility（攻击性/温顺性，反向）</li>
+            </ul>
+            <p>每种动物的匹配理由均基于可查证的物种行为特征，不使用文化刻板印象。</p>
+          </div>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== Toast 提示 ========== -->
+  <div id="toast" class="toast">✓ 图片已保存，去朋友圈发给朋友吧！</div>
+
+  <script src="app.js"></script>
+</body>
+</html>
