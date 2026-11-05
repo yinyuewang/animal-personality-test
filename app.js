@@ -4,114 +4,114 @@
  * 改动：选项打乱 + 微信友好分享 + 修正模糊选项文案
  * ============================================================ */
 
-/* ---------- 12 道题目数据（文艺版） ---------- */
+/* ---------- 12 道题目数据（搞笑版） ---------- */
 const QUESTIONS = [
   {
-    q: "朋友忽然带你去一个全然陌生的饭局，没人提前说过要见谁。推开门的那一刻，你最像哪一种？",
+    q: "你妈带你去一个陌生饭局，说都是亲戚。推开门那一瞬间，你最像哪个？",
     opts: [
-      { letter: "A", text: "嘴角微扬，环视全场，径直走向最近的陌生人：「嗨，你也是第一次来吗？」先认识在座每一个人再说。", dim: "S" },
-      { letter: "B", text: "目光先落向出口、角落、和桌上那杯没人碰过的酒 —— 确认一切安全之后，才敢把松掉的肩膀慢慢放下来。", dim: "E" },
-      { letter: "C", text: "第一眼便被墙上那幅画、桌上那道从未见过的菜、角落里蜷着的猫勾走了魂，好奇得忘了自己还站在门口。", dim: "O" },
-      { letter: "D", text: "瞥见角落有一个人安静地坐着，你轻声走过去：「要不要一起到那边？」好像TA一个人不太自在。", dim: "C" }
+      { letter: "A", text: "嘴炮模式瞬间激活：「哎哥！哎姐！你们好！我小时候见过你们！」其实根本记不住谁是谁。", dim: "S" },
+      { letter: "B", text: "先观察 30 秒：消防通道在哪？有没有人表情不对？菜里会不会有我过敏的东西？确认安全才敢坐下。", dim: "E" },
+      { letter: "C", text: "哇这菜我没见过！这装修挺有意思！角落那只猫是谁家的？完全忘了自己还没打招呼。", dim: "O" },
+      { letter: "D", text: "看见有个长辈一个人坐角落玩手机。默默端杯茶过去：「叔/姨，喝茶。」好像TA有点尴尬。", dim: "C" }
     ]
   },
   {
-    q: "难得有一整天完完全全属于自己，没有邀约，没有计划。你会怎么度过？",
+    q: "难得了一天假，没人约没通知没破事。你打算怎么造？",
     opts: [
-      { letter: "A", text: "拿起手机群发一条：「今天空了，谁出来吃饭？」独处太像一座孤岛，总得有船来靠岸。", dim: "S" },
-      { letter: "B", text: "在心里列好一张时间表：几点起、做什么、几点午休、几点睡 —— 秩序让我安心，混乱让我焦虑。", dim: "E" },
-      { letter: "C", text: "翻一本全新的食谱做从未尝试过的菜，搜一个从未涉足的巷弄去走走，或者索性花一整天学一个新技能。", dim: "O" },
-      { letter: "D", text: "把上周借的书还给朋友，帮邻居代收的快递送过去，顺便整理书架上要带去读书会的那几本。", dim: "C" }
+      { letter: "A", text: "群发一条：「今天没人管我！谁出来浪？」五分钟没回消息就开始 emo：大家都不爱我了。", dim: "S" },
+      { letter: "B", text: "列一张精确到分钟的时间表：几点起几点吃几点拉屎几点睡，生活节奏像精密仪器。", dim: "E" },
+      { letter: "C", text: "打开地图选一个从没去过的方向，穿上鞋就走。反正迷路了高德会救我。", dim: "O" },
+      { letter: "D", text: "把上周欠朋友的一顿饭补了，帮邻居把快递搬上楼，顺便给小区流浪猫带点猫粮。", dim: "C" }
     ]
   },
   {
-    q: "你正专注做一件事，忽然收到通知：原定明天的计划全部推翻，换成一个完全不同的新任务，明天下午就要交付。你第一反应是？",
+    q: "你正在摸鱼，老板突然喊：「之前方案全废了，明天下午交新的！」你的第一反应是？",
     opts: [
-      { letter: "A", text: "立刻戳开同事群：「听说了吗？全部重来！你们有什么想法？」—— 一个人的头，抵不过众人的脑。", dim: "S" },
-      { letter: "B", text: "心往下一沉：之前做的都白费了？时间够吗？会不会出岔子？越想越慌，但脑子停不下来。", dim: "E" },
-      { letter: "C", text: "眼睛亮了：全新的任务？意味着全新的玩法！之前想做但没机会的方案，现在可以一试身手了。", dim: "O" },
-      { letter: "D", text: "马上联系团队每个人，问大家手上有什么资源可以互相借力，尽量别让任何人做无用功。", dim: "C" }
+      { letter: "A", text: "立刻拉小群：「家人们听到了吗？全部重来！大家有什么想法快说！」一个人脑爆太累了。", dim: "S" },
+      { letter: "B", text: "心往下一沉：之前熬的三个通宵全白费？时间来得及吗？会不会又要被骂？脑子像卡了循环播放坏消息。", dim: "E" },
+      { letter: "C", text: "哎？全新的任务？那我之前想的那个骚操作方案可以试了！眼睛亮起来，摸鱼模式立刻切换工作狂。", dim: "O" },
+      { letter: "D", text: "先问组里每个人手上有啥资源能共享，尽量别让任何人像我一样白熬三个通宵。", dim: "C" }
     ]
   },
   {
-    q: "你一个人，站在餐厅门口、外卖APP前、或自家厨房的食材堆里，犹豫着今晚吃什么。你会怎么选？",
+    q: "吃饭时间到。你饿了。你会怎么选？",
     opts: [
-      { letter: "A", text: "先叫上一个朋友 —— 一个人吃饭像独自旅行，有人在对面坐着，米饭都要香三分。", dim: "S" },
-      { letter: "B", text: "选那家吃了许多年的老店 —— 新东西可能好吃也可能踩雷，稳一点总没错。", dim: "E" },
-      { letter: "C", text: "试试这家新开张的招牌菜！网红店也好路边摊也好，陌生的味道本身就是奖励。", dim: "O" },
-      { letter: "D", text: "先想想朋友圈有没有人提过这家，或者选邻居常点的那家 —— 跟着吃过的人走，不会错到哪里去。", dim: "C" }
+      { letter: "A", text: "先喊个人陪我。一个人吃饭像一个人看电影——不是不行，但总感觉哪里怪怪的。", dim: "S" },
+      { letter: "B", text: "选我吃了十年的那家。新网红店可能踩雷、可能吃拉肚子、可能排队一小时，稳一点总没错。", dim: "E" },
+      { letter: "C", text: "新开张的招牌菜！管他是网红店还是苍蝇馆，陌生的味道本身就是生活的小确幸啊喂！", dim: "O" },
+      { letter: "D", text: "翻朋友圈看谁最近夸过哪家好吃，或者跟着小区楼下那群叔叔阿姨常去的馆子走——群众的眼睛是雪亮的。", dim: "C" }
     ]
   },
   {
-    q: "你在小区花园里遇见一只看起来很狼狈的流浪猫。你会怎么做？",
+    q: "小区花园里有只看起来很狼狈的流浪猫。你会？",
     opts: [
-      { letter: "A", text: "掏出手机拍一张，发业主群和朋友圈：「有人认识这只猫吗？要不要一起送医院？」 —— 人多力量大。", dim: "S" },
-      { letter: "B", text: "不敢贸然靠近 —— 它可能受惊，可能有皮肤病，先远远拍一张，问问养过猫的朋友再做打算。", dim: "E" },
-      { letter: "C", text: "蹲下来安静观察：是什么品种？眼睛有没有发炎？之前在这一片见过它吗？ —— 它有过什么故事？", dim: "O" },
-      { letter: "D", text: "先回家拿了水和猫粮放过去，然后联系救助机构 —— 哪怕自己出钱，也不能看着它不管。", dim: "C" }
+      { letter: "A", text: "拍一张发业主群：「有人认识这只吗？要不要凑钱送医院？」一只猫的事，必须大家一起扛。", dim: "S" },
+      { letter: "B", text: "不敢直接碰。万一有狂犬病呢？万一它抓我呢？先百度「被流浪猫抓了怎么办」，然后再蹲远了观察。", dim: "E" },
+      { letter: "C", text: "蹲下来看：这是什么品种？眼睛怎么了？之前在这见过没？它以前有主人吗？脑子里已经演完一部猫生纪录片。", dim: "O" },
+      { letter: "D", text: "先回家拿了水和猫粮，然后联系救助机构。我出钱也行，总不能看着它等死吧。", dim: "C" }
     ]
   },
   {
-    q: "办公室或教室里来了一个新人，看起来有点紧张，不太敢说话。你会怎么对待TA？",
+    q: "办公室/教室来了个新人，看起来有点社恐不敢说话。你会怎么对待TA？",
     opts: [
-      { letter: "A", text: "第一个走过去：「嗨，我是XX，要不要一起去吃午饭？」 —— 社交圈多一个人，总比少一个人好。", dim: "S" },
-      { letter: "B", text: "犹豫了一下 —— 万一TA不喜欢被打扰呢？万一我热情过头显得奇怪呢？先观察几天再说。", dim: "E" },
-      { letter: "C", text: "好奇TA之前的经历：在哪儿长大？为什么选择这里？从聊天里能听见另一个人走过的路。", dim: "O" },
-      { letter: "D", text: "悄悄走过去告诉TA：打印机在那边、请假要点这里、有问题可以找我 —— 别让TA像个陌生人一样站在原地。", dim: "C" }
+      { letter: "A", text: "第一个冲过去：「嗨！我是XX！要不要一起吃午饭？我带你去食堂/外面那家超好吃的店！」社交牛逼症爆发。", dim: "S" },
+      { letter: "B", text: "纠结了十分钟：我该不该打招呼？会不会TA就是想安静？会不会我热情过头显得奇怪？算了还是假装没看见吧。", dim: "E" },
+      { letter: "C", text: "好奇TA：之前在哪上班/上学？为什么来这儿？家里几口人？哦不对最后一个太隐私了……从聊天里挖八卦才是正事。", dim: "O" },
+      { letter: "D", text: "悄悄告诉TA：打印机在那边，请假要找那个戴眼镜的，中午可以去那家面馆，有不懂的随时找我——别让TA像个透明人。", dim: "C" }
     ]
   },
   {
-    q: "你有一周假期，决定一个人去远方旅行。你会怎么规划这七天？",
+    q: "你有一周假期，决定一个人出去浪。你会怎么规划？",
     opts: [
-      { letter: "A", text: "先搜搜有没有朋友恰好在那个城市，约着吃顿饭；或者在路上试试能不能拼个伴 —— 一个人的风景少了一半。", dim: "S" },
-      { letter: "B", text: "做一份极其细致的攻略：每天住哪、几点起、景点顺序、应急电话、甚至当地医院地址 —— 心安比惊喜重要。", dim: "E" },
-      { letter: "C", text: "不做攻略。到了机场再查天气，到了街上再看心情 —— 哪个方向吸引我就往哪走，意外才是旅行的礼物。", dim: "O" },
-      { letter: "D", text: "查当地有没有公益机构可以顺道帮忙，或者去看望一个很久没见的老朋友；回来给同事都带一份伴手礼。", dim: "C" }
+      { letter: "A", text: "先搜搜有没有朋友恰好在那个城市，约着吃顿火锅；或者到了当地看看能不能拼个团交个新朋友。一人游，没意思。", dim: "S" },
+      { letter: "B", text: "做一份写满三页纸的攻略：每天住哪、几点起、地铁几号线、景点排队时间、当地医院地址、紧急联系人电话。踏实。", dim: "E" },
+      { letter: "C", text: "不做。攻。略。到了机场再查天气，到了街上再看心情。哪个方向顺眼就往哪走，迷路了就是惊喜。", dim: "O" },
+      { letter: "D", text: "查当地有没有公益机构能顺道帮忙，或者去看望一个很久没见的老朋友；回来给同事全带伴手礼，一个都不能落。", dim: "C" }
     ]
   },
   {
-    q: "一件让你焦虑得睡不着的事，你会怎么处理它？",
+    q: "有件事让你焦虑得睡不着。你会怎么跟它相处？",
     opts: [
-      { letter: "A", text: "约朋友出来吃饭散步，从头到尾讲一遍 —— 说出来，就像把心里的石头搬开了。", dim: "S" },
-      { letter: "B", text: "脑子里反复演练：会不会搞砸？后果是什么？有没有别的可能？越想越清醒，越清醒越停不下来。", dim: "E" },
-      { letter: "C", text: "换个角度想：这也算一种全新的体验吧？或者找找有没有之前没考虑过的解法 —— 问题是墙，也可能是门。", dim: "O" },
-      { letter: "D", text: "不想把负能量带给别人 —— 自己扛着，等事情过去再说。朋友不是用来当垃圾桶的。", dim: "C" }
+      { letter: "A", text: "约朋友出来吃火锅吐槽，从头到尾讲八遍——说到第八遍的时候，朋友已经能替你说完了，但你心里还是舒服多了。", dim: "S" },
+      { letter: "B", text: "躺在床上反复想：会不会搞砸？后果是什么？最坏的情况是什么？有没有别的可能？越想越清醒，越清醒越想。", dim: "E" },
+      { letter: "C", text: "换个角度想：这也算一次全新体验对吧？或者找找有没有之前没考虑过的骚操作解法——问题是墙，也可能是窗户。", dim: "O" },
+      { letter: "D", text: "不想把负能量传染给朋友。自己扛着，等事情翻篇了再说。朋友不是你的情绪垃圾桶，别祸害人家。", dim: "C" }
     ]
   },
   {
-    q: "不太熟的人要来家里做客（比如同事、父母的朋友）。你的第一反应是？",
+    q: "不太熟的人要来家里做客（比如同事、爸妈的朋友）。你的第一反应是？",
     opts: [
-      { letter: "A", text: "提前打三个电话：几点到？地铁哪个出口？路上好走吗？把一切都安排得明明白白。", dim: "S" },
-      { letter: "B", text: "紧张地擦了三遍桌子、摆了一遍又一遍茶杯 —— 万一客人觉得我家乱怎么办？万一冷场怎么办？", dim: "E" },
-      { letter: "C", text: "有点兴奋：终于有人可以聊天了！我可以把收藏的那套奇怪的茶具、那本绝版书都翻出来分享。", dim: "O" },
-      { letter: "D", text: "提前备好饮料零食，注意观察客人的表情 —— 要是TA看起来不自在，就主动搭个话帮TA放松。", dim: "C" }
+      { letter: "A", text: "提前打三个电话：几点到？地铁哪个口出？路上好走吗？要不要我下去接？把一切安排得明明白白。", dim: "S" },
+      { letter: "B", text: "紧张地擦了四遍桌子、摆了三遍茶杯、把袜子从沙发底下捡了五遍。万一客人觉得我家乱怎么办？万一冷场怎么办？", dim: "E" },
+      { letter: "C", text: "有点小兴奋！终于有人可以聊天了！我那套收藏的奇怪茶具、绝版漫画、去年海边捡的贝壳，终于可以见光了！", dim: "O" },
+      { letter: "D", text: "提前备好饮料零食，注意观察客人的表情——要是TA看起来拘束，就主动搭个话帮TA放松，别让人家尴尬。", dim: "C" }
     ]
   },
   {
-    q: "你和另一个人同时在竞争一个东西（职位、比赛名额、一张难抢的演出票）。你会怎么做？",
+    q: "你和另一个人同时在抢一个东西（职位、比赛名额、最后一张演出票）。你会？",
     opts: [
-      { letter: "A", text: "找几个朋友一起出主意、攒资源 —— 一个人的拳头抵不过一群人的力量。", dim: "S" },
-      { letter: "B", text: "有点不安：对手是谁？TA有什么优势？会不会有什么我不知道的渠道？提前想好多万一输了怎么办。", dim: "E" },
-      { letter: "C", text: "试试别人没试过的方法 —— 大家都走那条路，我偏要另辟蹊径，说不定就能出奇制胜。", dim: "O" },
-      { letter: "D", text: "凭本事竞争，不耍手段；如果对方赢了，虽然失落但也服气，甚至会主动说一声：你真棒。", dim: "C" }
+      { letter: "A", text: "找几个朋友一起出主意攒人脉——一个人的拳头拧不过一群人的大腿。teamwork！", dim: "S" },
+      { letter: "B", text: "有点不安：对手是谁？TA有啥背景？会不会有我不知道的渠道？提前脑补输了之后的emo场景三遍。", dim: "E" },
+      { letter: "C", text: "试试别人没试过的路子。大家都走正门，我偏要翻窗户——说不定就能出奇制胜，虽然也可能摔个狗吃屎。", dim: "O" },
+      { letter: "D", text: "凭本事抢，不搞阴的。如果对方赢了，虽然心痛但也服气，甚至会说：「牛啊兄弟，你是真的强。」", dim: "C" }
     ]
   },
   {
-    q: "你要搬到一个完全陌生的城市了。你的心情是？",
+    q: "你要搬去一个完全陌生的城市了。心情是？",
     opts: [
-      { letter: "A", text: "第一件事：加几个当地群，发帖求认识新邻居；翻一翻老同学通讯录，看有没有人恰好也在那儿。", dim: "S" },
-      { letter: "B", text: "心里发紧：新环境、新人际关系、一切都不确定……出发前查好当地治安、医院、房价、甚至紧急联系人。", dim: "E" },
-      { letter: "C", text: "期待！一座新的城市，意味着新的清晨、新的街角、新的味道，还有可能遇到的意想不到的人。", dim: "O" },
+      { letter: "A", text: "第一件事：加三个当地群发帖求认识邻居；翻老同学通讯录看有没有人恰好也在那儿，抱大腿要紧。", dim: "S" },
+      { letter: "B", text: "心里发紧：新环境、新领导、新同事、一切都不确定……出发前查好当地治安、医院、房价、甚至派出所地址。", dim: "E" },
+      { letter: "C", text: "期待！一座新城市意味着新的早餐店、新的夜路、新的老头下棋围观点，还有可能遇到的意想不到的人。", dim: "O" },
       { letter: "D", text: "临走前把旧家具留给需要的人，把不用的东西分给邻居；到了新地方，主动帮楼下老人拎个菜、修个灯。", dim: "C" }
     ]
   },
   {
-    q: "凌晨两点，你本来只想刷五分钟手机，结果关不掉了。主要原因是？",
+    q: "凌晨两点，你本来只想刷五分钟手机，结果停不下来。主要原因是？",
     opts: [
-      { letter: "A", text: "不是刷短视频 —— 是在跟朋友聊天，话题越聊越投机，越投机越想继续，根本舍不得道晚安。", dim: "S" },
-      { letter: "B", text: "脑子里一直盘旋着白天没处理好的事，越想越焦虑，越焦虑越要刷手机逃避，像陷入一个循环。", dim: "E" },
-      { letter: "C", text: "在查一个之前从没关注过的话题，越查越有意思，发现了一个全新的世界，停不下来。", dim: "O" },
-      { letter: "D", text: "其实已经困了，但看到群里有人发求助帖，你答应了；又看到另一个人需要帮忙……不知不觉就过了零点。", dim: "C" }
+      { letter: "A", text: "不是刷短视频——是在跟朋友聊天，话题从今天的饭好不好吃聊到人生意义，越聊越投机，根本舍不得睡。", dim: "S" },
+      { letter: "B", text: "脑子里一直循环播放白天没处理好的事，越想越焦虑，越焦虑越刷手机逃避，陷入死循环，像个卡带的磁带。", dim: "E" },
+      { letter: "C", text: "在查一个之前完全没关注过的话题，越查越有意思，发现了一个全新的世界，比如「为什么猫喜欢踩奶」，停不下来。", dim: "O" },
+      { letter: "D", text: "其实已经困了，但看到群里有人发求助帖你没忍住；又看到另一个人需要帮忙……等反应过来，天都快亮了。", dim: "C" }
     ]
   }
 ];
@@ -530,20 +530,41 @@ function removeSticker(id) {
 /* ---------- 渲染所有贴纸到 DOM ---------- */
 function renderStickers() {
   const layer = $("stickers-layer");
-  layer.innerHTML = "";
+  const existing = {};
+  // 记录当前 DOM 里有的贴纸
+  layer.querySelectorAll(".sticker").forEach(el => {
+    if (el.dataset.id) existing[el.dataset.id] = el;
+  });
+
+  // 收集 id 集合
+  const currentIds = new Set(stickerState.stickers.map(s => String(s.id)));
+
+  // 1. 删掉已经不存在的贴纸 DOM
+  Object.keys(existing).forEach(id => {
+    if (!currentIds.has(id)) existing[id].remove();
+  });
+
+  // 2. 更新 / 新增
   stickerState.stickers.forEach(s => {
-    const el = document.createElement("div");
-    el.className = "sticker" + (s.id === stickerState.selectedId ? " selected" : "");
-    el.textContent = s.emoji;
-    // 用百分比绝对定位
+    let el = existing[String(s.id)];
+    if (!el) {
+      // 新增
+      el = document.createElement("div");
+      el.className = "sticker";
+      el.textContent = s.emoji;
+      el.dataset.id = s.id;
+      layer.appendChild(el);
+      bindStickerEvents(el, s);
+    }
+    // 更新内容（emoji 可能变）
+    if (el.textContent !== s.emoji) el.textContent = s.emoji;
+    // 更新位置/缩放/旋转
     el.style.left = s.x + "%";
     el.style.top = s.y + "%";
     el.style.transform =
       "translate(-50%, -50%) scale(" + s.scale + ") rotate(" + s.rotate + "deg)";
-    // 让 sticker 上的 events 指向
-    el.dataset.id = s.id;
-    bindStickerEvents(el, s);
-    layer.appendChild(el);
+    // 更新选中态
+    el.classList.toggle("selected", s.id === stickerState.selectedId);
   });
 }
 
@@ -551,8 +572,8 @@ function renderStickers() {
 function bindStickerEvents(el, sticker) {
   let dragging = false;
   let startX, startY, origX, origY;
-  let clickTimer = null;
   let moved = false;
+  let lastClickTime = 0;
 
   function onDown(e) {
     dragging = true;
@@ -560,7 +581,7 @@ function bindStickerEvents(el, sticker) {
     const p = getPoint(e);
     startX = p.x; startY = p.y;
     origX = sticker.x; origY = sticker.y;
-    selectSticker(sticker.id);
+    // 不调 selectSticker！否则 renderStickers 销毁当前 el
     e.preventDefault();
   }
   function onMove(e) {
@@ -572,9 +593,30 @@ function bindStickerEvents(el, sticker) {
     sticker.x = Math.max(0, Math.min(100, origX + dx));
     sticker.y = Math.max(0, Math.min(100, origY + dy));
     moved = true;
-    renderStickers();
+    // 直接改 style，不调 renderStickers（避免重建 DOM）
+    el.style.left = sticker.x + "%";
+    el.style.top = sticker.y + "%";
   }
-  function onUp() { dragging = false; }
+  function onUp() {
+    if (!dragging) return;
+    dragging = false;
+    // 拖拽结束后再选中 + 刷新选中态（确保 selected class 正确）
+    const now = Date.now();
+    if (!moved && now - lastClickTime < 300) {
+      // 双击删除
+      removeSticker(sticker.id);
+      return;
+    }
+    lastClickTime = now;
+    // 点击 → 选中
+    if (!moved) {
+      if (stickerState.selectedId === sticker.id) {
+        deselectSticker();
+      } else {
+        selectSticker(sticker.id);
+      }
+    }
+  }
 
   el.addEventListener("mousedown", onDown);
   window.addEventListener("mousemove", onMove);
@@ -582,12 +624,6 @@ function bindStickerEvents(el, sticker) {
   el.addEventListener("touchstart", onDown, { passive: false });
   window.addEventListener("touchmove", onMove, { passive: false });
   window.addEventListener("touchend", onUp);
-
-  // 双击删除（用 dblclick 事件）
-  el.addEventListener("dblclick", function(e) {
-    e.stopPropagation();
-    removeSticker(sticker.id);
-  });
 }
 
 /* ---------- 选中/取消选中 ---------- */
@@ -698,7 +734,7 @@ function showResult() {
   const scores = computeScores();
   const hilo = {};
   ["S", "E", "O", "C"].forEach(function(d) {
-    hilo[d] = scores[d] >= 4 ? "H" : "L"; /* 4 = 该维度至少答对 1/3 的题，视为有明显倾向 */
+    hilo[d] = scores[d] >= 3 ? "H" : "L"; /* 3 = 均值切分，确保 16 种组合都能被测到 */
   });
   const key = "S_" + hilo.S + "_E_" + hilo.E + "_O_" + hilo.O + "_C_" + hilo.C;
   const animal = ANIMALS[key] || ANIMALS["S_L_E_L_O_L_C_L"];

@@ -583,7 +583,7 @@ html, body {
 .photo-editor {
   position: relative;
   width: 100%;
-  padding-top: 133%;    /* 3:4 比例 */
+  aspect-ratio: 3 / 4;    /* 3:4 比例，html2canvas 能正确识别 */
   background: #e8e4df;   /* 温暖米灰色，placeholder 时显示 */
   border-radius: var(--radius);
   overflow: hidden;
