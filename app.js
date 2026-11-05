@@ -361,54 +361,52 @@ function computeScores() {
  * 大头贴合成模块
  * ============================================================ */
 
-/* ---------- 发箍配置表 ----------
- * 每个动物有两个字段：
- *   headbandEmoji: 临时 fallback，用 Canvas 画成"发箍+耳朵"效果，立即可用
- *   headbandImage: 可替换的透明 PNG 路径。后续你可以把真实发箍图放到
- *                  headbands/ 目录下，然后把这里改成 "headbands/狐獴.png"
- * 两者都可以为空字符串，代码会自动 fallback
- */
+/* ============================================================
+ * 发箍配置：每个动物一个 emoji，直接显示在 CSS 画的半圆形发箍底座上
+ * 想改表情/加图都在这里改
+ * ============================================================ */
 const HEADBAND_CONFIG = {
-  "S_H_E_H_O_H_C_H": { emoji: "🦝", image: "", label: "狐獴耳朵" },
-  "S_H_E_H_O_H_C_L": { emoji: "🐒", image: "", label: "猴子耳朵" },
-  "S_H_E_H_O_L_C_H": { emoji: "🐑", image: "", label: "绵羊耳朵" },
-  "S_H_E_H_O_L_C_L": { emoji: "🐦", image: "", label: "麻雀耳朵" },
-  "S_H_E_L_O_H_C_H": { emoji: "🐬", image: "", label: "海豚发箍" },
-  "S_H_E_L_O_H_C_L": { emoji: "🐔", image: "", label: "鸡耳朵" },
-  "S_H_E_L_O_L_C_H": { emoji: "🐀", image: "", label: "老鼠耳朵" },
-  "S_H_E_L_O_L_C_L": { emoji: "🕊️", image: "", label: "鸽子耳朵" },
-  "S_L_E_H_O_H_C_H": { emoji: "🦏", image: "", label: "犀牛角" },
-  "S_L_E_H_O_H_C_L": { emoji: "🦊", image: "", label: "狐狸耳朵" },
-  "S_L_E_H_O_L_C_H": { emoji: "🦔", image: "", label: "刺猬耳朵" },
-  "S_L_E_H_O_L_C_L": { emoji: "🐈", image: "", label: "猫耳朵" },
-  "S_L_E_L_O_H_C_H": { emoji: "🦧", image: "", label: "红毛猩猩" },
-  "S_L_E_L_O_H_C_L": { emoji: "🐻", image: "", label: "熊耳朵" },
-  "S_L_E_L_O_L_C_H": { emoji: "🐘", image: "", label: "大象耳朵" },
-  "S_L_E_L_O_L_C_L": { emoji: "🐢", image: "", label: "小乌龟" }
+  "S_H_E_H_O_H_C_H": { emoji: "🦝", label: "狐獴" },
+  "S_H_E_H_O_H_C_L": { emoji: "🐒", label: "恒河猴" },
+  "S_H_E_H_O_L_C_H": { emoji: "🐑", label: "绵羊" },
+  "S_H_E_H_O_L_C_L": { emoji: "🐦", label: "家麻雀" },
+  "S_H_E_L_O_H_C_H": { emoji: "🐬", label: "瓶鼻海豚" },
+  "S_H_E_L_O_H_C_L": { emoji: "🐓", label: "原鸡" },
+  "S_H_E_L_O_L_C_H": { emoji: "🐀", label: "裸鼹鼠" },
+  "S_H_E_L_O_L_C_L": { emoji: "🕊️", label: "野鸽" },
+  "S_L_E_H_O_H_C_H": { emoji: "🦏", label: "黑犀牛" },
+  "S_L_E_H_O_H_C_L": { emoji: "🦊", label: "赤狐" },
+  "S_L_E_H_O_L_C_H": { emoji: "🦔", label: "欧洲刺猬" },
+  "S_L_E_H_O_L_C_L": { emoji: "🐱", label: "家猫" },
+  "S_L_E_L_O_H_C_H": { emoji: "🦧", label: "红毛猩猩" },
+  "S_L_E_L_O_H_C_L": { emoji: "🐻", label: "棕熊" },
+  "S_L_E_L_O_L_C_H": { emoji: "🐘", label: "亚洲象" },
+  "S_L_E_L_O_L_C_L": { emoji: "🐢", label: "箱龟" }
 };
 
-/* ---------- 大头贴状态 ---------- */
+/* ---------- 大头贴状态：位置用百分比（相对容器），方便自适应 ---------- */
 let headbandState = {
-  photoDataUrl: null,       // 用户照片的 dataURL
-  currentKey: null,          // 当前结果的维度 key
-  scale: 100,                // 滑块值：40-200 → 0.4-2.0
-  offsetX: 0,                // 滑块值：-50~50 → 像素偏移（相对容器宽度百分比）
-  offsetY: 0,                // 滑块值：-50~50 → 像素偏移
-  rotate: 0                  // 滑块值：-30~30 度
+  photoDataUrl: null,
+  currentKey: null,
+  // 发箍位置（相对容器的百分比：0~100）
+  posX: 50,    // 默认居中
+  posY: 18,    // 默认在顶部（头顶位置）
+  scale: 1.0,  // 0.3~2.5
+  rotate: 0
 };
 
-/* ---------- 初始化：绑定事件 ---------- */
+/* ---------- 初始化：绑定事件（上传 + 滑块 + 拖拽 + 合成） ---------- */
 function initHeadband() {
-  // 点击容器 / 上传按钮 → 触发文件选择
-  $("headband-container").addEventListener("click", function() {
+  // 上传照片
+  $("headband-container").addEventListener("click", function(e) {
+    // 点击发箍本身不触发上传
+    if (e.target.closest("#animal-headband")) return;
     $("photo-input").click();
   });
   $("btn-upload-photo").addEventListener("click", function(e) {
     e.stopPropagation();
     $("photo-input").click();
   });
-
-  // 选择文件 → 读取
   $("photo-input").addEventListener("change", function(e) {
     const file = e.target.files[0];
     if (!file) return;
@@ -420,21 +418,21 @@ function initHeadband() {
     reader.readAsDataURL(file);
   });
 
-  // 滑块联动
-  ["scale", "x", "y", "rotate"].forEach(function(key) {
-    const sliderId = "slider-" + (key === "scale" ? "scale" : key);
-    $("slider-" + key).addEventListener("input", function() {
-      updateHeadbandTransform();
-    });
+  // 滑块联动 → 更新 state → 应用 transform
+  $("slider-scale").addEventListener("input", function() {
+    headbandState.scale = parseFloat(this.value) / 100;  // 30~250 → 0.3~2.5
+    updateHeadbandTransform();
+  });
+  $("slider-rotate").addEventListener("input", function() {
+    headbandState.rotate = parseFloat(this.value);
+    updateHeadbandTransform();
   });
 
   // 重置按钮
   $("btn-reset-headband").addEventListener("click", resetHeadband);
 
-  // 生成大头贴按钮
+  // 生成大头贴 + 下载
   $("btn-generate-photo").addEventListener("click", generateComposite);
-
-  // 下载按钮
   $("btn-download-photo").addEventListener("click", function() {
     const img = $("generated-photo");
     const a = document.createElement("a");
@@ -442,6 +440,57 @@ function initHeadband() {
     a.download = "我的动物大头贴.png";
     a.click();
   });
+
+  // 发箍拖拽（鼠标 + 触摸）
+  bindDrag();
+}
+
+/* ---------- 拖拽逻辑：支持鼠标 + 触摸 ---------- */
+function bindDrag() {
+  const band = $("animal-headband");
+  const container = $("headband-container");
+  let dragging = false;
+  let startX = 0, startY = 0;     // 拖拽起始点
+  let startPosX = 0, startPosY = 0; // 发箍起始位置
+
+  function onDown(e) {
+    dragging = true;
+    const p = getPoint(e);
+    startX = p.x; startY = p.y;
+    startPosX = headbandState.posX;
+    startPosY = headbandState.posY;
+    e.preventDefault();
+  }
+  function onMove(e) {
+    if (!dragging) return;
+    const p = getPoint(e);
+    const rect = container.getBoundingClientRect();
+    // 移动距离 → 相对容器的百分比
+    const dx = ((p.x - startX) / rect.width) * 100;
+    const dy = ((p.y - startY) / rect.height) * 100;
+    // 更新 state（clamp 0~100）
+    headbandState.posX = Math.max(0, Math.min(100, startPosX + dx));
+    headbandState.posY = Math.max(0, Math.min(100, startPosY + dy));
+    updateHeadbandTransform();
+  }
+  function onUp() { dragging = false; }
+
+  band.addEventListener("mousedown", onDown);
+  window.addEventListener("mousemove", onMove);
+  window.addEventListener("mouseup", onUp);
+  band.addEventListener("touchstart", onDown, { passive: false });
+  window.addEventListener("touchmove", onMove, { passive: false });
+  window.addEventListener("touchend", onUp);
+}
+/* 从 mouse/touch 事件里拿坐标 */
+function getPoint(e) {
+  if (e.touches && e.touches[0]) {
+    return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+  }
+  if (e.changedTouches && e.changedTouches[0]) {
+    return { x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY };
+  }
+  return { x: e.clientX, y: e.clientY };
 }
 
 /* ---------- 应用用户照片 ---------- */
@@ -453,79 +502,45 @@ function applyPhoto() {
   img.src = headbandState.photoDataUrl;
   container.classList.add("has-photo");
   placeholder.classList.add("hidden");
-
-  // 显示滑块组
   $("slider-group").classList.remove("hidden");
 }
 
-/* ---------- 加载当前动物对应的发箍 ---------- */
+/* ---------- 加载当前动物对应的发箍（设置 emoji，重置位置） ---------- */
 function loadHeadband(animalKey) {
   headbandState.currentKey = animalKey;
   const config = HEADBAND_CONFIG[animalKey];
-  const img = $("animal-headband");
+  const band = $("animal-headband");
+  const emojiEl = $("headband-emoji");
 
-  if (!config) { img.style.display = "none"; return; }
+  if (!config) { band.style.display = "none"; return; }
 
-  // 重置位置
+  // 设置 emoji
+  emojiEl.textContent = config.emoji;
+  band.style.display = "block";
+
+  // 重置到默认位置
   resetHeadband();
-
-  if (config.image) {
-    // 用户自己放了 PNG → 用 PNG
-    img.src = config.image;
-    img.style.display = "block";
-  } else {
-    // fallback：用 emoji 做一个临时"发箍"SVG
-    // 方式：在 Canvas 上画 emoji + 一个弧形发箍形状，导出为 dataURL
-    const svg = buildHeadbandSvg(config.emoji);
-    img.src = "data:image/svg+xml;utf8," + encodeURIComponent(svg);
-    img.style.display = "block";
-  }
 }
 
-/* ---------- 程序化生成发箍 SVG（emoji + 弧形底座） ---------- */
-function buildHeadbandSvg(emoji) {
-  // 尺寸：宽 400 高 220（发箍是一个弧形条带 + emoji）
-  return '' +
-    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 220" width="400" height="220">' +
-    // 透明背景
-    '<rect width="400" height="220" fill="transparent"/>' +
-    // 发箍弧形底座（从左下到右下的半圆弧）
-    '<path d="M 40 180 Q 200 -40 360 180 Z" fill="rgba(107,142,122,0.35)" stroke="rgba(77,107,90,0.6)" stroke-width="3"/>' +
-    // emoji（居中偏上）
-    '<text x="200" y="150" text-anchor="middle" font-size="140" font-family="Apple Color Emoji, Segoe UI Emoji, sans-serif" dominant-baseline="middle">' + emoji + '</text>' +
-    '</svg>';
-}
-
-/* ---------- 更新发箍 CSS transform ---------- */
+/* ---------- 把 state 应用到 CSS transform ---------- */
 function updateHeadbandTransform() {
   const s = headbandState;
-  const img = $("animal-headband");
-  if (!img || img.style.display === "none") return;
-
-  // scale: 40-200 → 0.4-2.0
-  const scaleRatio = s.scale / 100;
-  // 偏移：滑块 -50~50 → -25%~25%（相对发箍自身宽度）
-  const xPct = s.offsetX;
-  const yPct = s.offsetY;
-
-  img.style.transform =
-    "translate(calc(-50% + " + xPct + "%), " + yPct + "%) " +
-    "scale(" + scaleRatio + ") " +
-    "rotate(" + s.rotate + "deg)";
+  const band = $("animal-headband");
+  if (!band) return;
+  band.style.left = s.posX + "%";
+  band.style.top  = s.posY + "%";
+  band.style.transform =
+    "translate(-50%, -50%) scale(" + s.scale + ") rotate(" + s.rotate + "deg)";
 }
 
-/* ---------- 重置发箍位置 ---------- */
+/* ---------- 重置发箍位置/大小 ---------- */
 function resetHeadband() {
-  headbandState.scale = 100;
-  headbandState.offsetX = 0;
-  headbandState.offsetY = 0;
+  headbandState.posX = 50;
+  headbandState.posY = 18;
+  headbandState.scale = 1.0;
   headbandState.rotate = 0;
-
-  $("slider-scale").value = 100;
-  $("slider-x").value = 0;
-  $("slider-y").value = 0;
+  $("slider-scale").value = 100;   // 滑块用 100 表示 scale=1.0
   $("slider-rotate").value = 0;
-
   updateHeadbandTransform();
 }
 
@@ -583,44 +598,85 @@ function drawCover(ctx, img, x, y, w, h) {
   ctx.drawImage(img, dx, dy, dw, dh);
 }
 
-/* ---------- Canvas 辅助：按当前 transform 绘制发箍 ---------- */
+/* ---------- Canvas 辅助：画发箍（CSS 半圆形底座 + Emoji） ---------- */
 function drawHeadbandOnCanvas(ctx, W, H) {
-  const headImg = $("animal-headband");
-  if (!headImg || headImg.style.display === "none") return;
+  const band = $("animal-headband");
+  const emojiEl = $("headband-emoji");
+  if (!band || band.style.display === "none") return;
 
-  // 获取预览容器的实际尺寸（用 getBoundingClientRect）
+  // 当前发箍的 emoji（从 DOM 读，或者从 state.currentKey 读）
+  const emoji = emojiEl ? emojiEl.textContent : "🦊";
+  if (!emoji) return;
+
+  // 预览容器的实际尺寸
   const container = $("headband-container");
   const rect = container.getBoundingClientRect();
   const cw = rect.width;
   const ch = rect.height;
 
-  // 发箍在预览中的尺寸（CSS: width: 60% container）
-  const hw = cw * 0.6;
-  // 发箍在预览中的 top（CSS: top: -5% container 高度）
-  const topPct = -0.05;
-
-  // 把滑块 translate/scale/rotate 转换为 Canvas 坐标
-  // Canvas 坐标系：左上角 (0,0)，像素 = W/cw（按宽度比）
-  const scaleRatio = W / cw;
-
-  const imgW = hw * scaleRatio;
-  const imgH = hw * 1.1 * scaleRatio; // 发箍原始宽高比约 400:220 ≈ 1.8 → 这里近似
-  const cx = (cw / 2) * scaleRatio;                          // 发箍锚点 x（容器中心）
-  const cy = (ch * topPct + hw * 0.55) * scaleRatio;          // 锚点 y：top + 发箍底部（发箍底部中心是 transform-origin）
-
-  // 滑块值 → 像素（滑块 x:-50~50 相对发箍宽度百分比）
+  // Canvas 像素比
+  const PX = W / cw;
   const s = headbandState;
-  const translateX = (s.offsetX / 100) * imgW;
-  const translateY = (s.offsetY / 100) * imgW;
-  const scale = s.scale / 100;
-  const rotateRad = (s.rotate * Math.PI) / 180;
+
+  // 发箍在 Canvas 上的尺寸（CSS 里 width: 45% 容器宽度）
+  const bandW = cw * 0.45 * PX * s.scale;
+  const bandH = bandW * 1.2;  // 高度比宽度略大
+  // 发箍锚点（中心）：posX/posY 是 0-100 百分比
+  const cx = (cw * s.posX / 100) * PX;
+  const cy = (ch * s.posY / 100) * PX;
 
   ctx.save();
-  ctx.translate(cx + translateX, cy + translateY);
-  ctx.rotate(rotateRad);
-  ctx.scale(scale, scale);
-  ctx.translate(-imgW / 2, -imgH); // 把锚点移到发箍底部中心
-  ctx.drawImage(headImg, 0, 0, imgW, imgH);
+  ctx.translate(cx, cy);
+  ctx.rotate((s.rotate * Math.PI) / 180);
+
+  // ======== 1. 画半圆形发箍底座 ========
+  // 位置：锚点在发箍中心，发箍下半部是半圆形
+  // 所以半圆顶边在 cy - bandH*0.25 处，底边在 cy + bandH*0.75 处
+  const halfW = bandW / 2;
+  const bandTopY = -bandH * 0.25;   // 相对锚点
+  const bandBotY = bandH * 0.55;
+  // 渐变
+  const grad = ctx.createLinearGradient(0, bandTopY, 0, bandBotY);
+  grad.addColorStop(0, "#f5ead2");
+  grad.addColorStop(0.5, "#e8d9b0");
+  grad.addColorStop(1, "#d4c18a");
+
+  ctx.beginPath();
+  ctx.moveTo(-halfW, bandBotY);
+  ctx.lineTo(-halfW, bandTopY + bandH * 0.1);
+  // 上半圆（从左到右，上凸）
+  ctx.arc(0, bandTopY + bandH * 0.1, halfW, Math.PI, 0, false);
+  ctx.lineTo(halfW, bandBotY);
+  ctx.closePath();
+  ctx.fillStyle = grad;
+  ctx.fill();
+  // 描边
+  ctx.strokeStyle = "#b09a6e";
+  ctx.lineWidth = 2 * s.scale;
+  ctx.stroke();
+
+  // ======== 2. 画 Emoji（居中在发箍上半部） ========
+  // emoji 大小 = 发箍宽度的 70%
+  const emojiSize = bandW * 0.7;
+  ctx.font = emojiSize + "px Apple Color Emoji, Segoe UI Emoji, sans-serif";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  // emoji 位置：发箍顶部偏下一点
+  const emojiY = -bandH * 0.1;
+  ctx.fillText(emoji, 0, emojiY);
+
+  // ======== 3. 画小花装饰（简化：几个小圆点） ========
+  // 沿半圆底边画几个小粉/黄色圆
+  ctx.fillStyle = "#ff8fa3";
+  for (let i = -3; i <= 3; i++) {
+    const angle = Math.PI + (i + 3) / 6 * Math.PI;  // 从 180° 到 360°
+    const fx = Math.cos(angle) * (halfW - 4);
+    const fy = Math.sin(angle) * (halfW * 0.7) + bandTopY + bandH * 0.1;
+    ctx.beginPath();
+    ctx.arc(fx, fy, 3 * s.scale, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
   ctx.restore();
 }
 

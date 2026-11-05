@@ -110,8 +110,11 @@
               <div class="upload-icon">📷</div>
               <div class="upload-text">点击上传你的照片<br/><span>正方形正面照效果最佳</span></div>
             </div>
-            <!-- 上层：动物发箍（绝对定位，可拖动缩放旋转） -->
-            <img id="animal-headband" class="animal-headband" alt="动物发箍" draggable="false" />
+            <!-- 上层：可拖拽缩放旋转的发箍贴纸（CSS 画的半圆形发箍 + Emoji） -->
+            <div id="animal-headband" class="animal-headband" draggable="false">
+              <div class="headband-base"></div>          <!-- CSS 画的半圆形发箍底座 -->
+              <div class="headband-emoji" id="headband-emoji">🦊</div>  <!-- 动物 Emoji -->
+            </div>
           </div>
         </div>
 
@@ -123,24 +126,17 @@
           <input type="file" id="photo-input" accept="image/*" style="display:none" />
         </div>
 
-        <!-- 调整滑块 -->
+        <!-- 调整滑块（只有大小和旋转——位置用拖拽） -->
         <div id="slider-group" class="slider-group hidden">
           <div class="slider-item">
             <label>🖐 大小</label>
-            <input type="range" id="slider-scale" min="40" max="200" value="100" />
-          </div>
-          <div class="slider-item">
-            <label>↔ 水平</label>
-            <input type="range" id="slider-x" min="-50" max="50" value="0" />
-          </div>
-          <div class="slider-item">
-            <label>↕ 垂直</label>
-            <input type="range" id="slider-y" min="-50" max="50" value="0" />
+            <input type="range" id="slider-scale" min="30" max="250" value="100" />
           </div>
           <div class="slider-item">
             <label>🔄 旋转</label>
             <input type="range" id="slider-rotate" min="-30" max="30" value="0" />
           </div>
+          <div class="slider-tip">💡 提示：直接拖发箍就能移动到任意位置</div>
           <button id="btn-reset-headband" class="btn btn-reset">重置位置</button>
         </div>
 

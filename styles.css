@@ -626,18 +626,79 @@ html, body {
   margin-top: 4px;
 }
 
-/* 发箍层：绝对定位在顶部 */
+/* 发箍层：绝对定位，可拖拽 */
 .animal-headband {
   position: absolute;
-  /* 默认位置：顶部中间、宽度 60% */
-  top: -5%;
+  /* 默认位置：容器中心偏上 */
+  top: 18%;
   left: 50%;
-  width: 60%;
-  transform: translate(-50%, 0) scale(1) rotate(0deg);
-  transform-origin: center bottom; /* 以发箍底部中心为锚点，旋转更自然 */
-  pointer-events: none;
+  width: 45%;           /* 发箍默认宽度 = 容器宽度的 45% */
+  /* transform: translate(-50%, -50%) scale(1) rotate(0deg) 由 JS 控制 */
+  transform: translate(-50%, -50%) scale(1) rotate(0deg);
+  transform-origin: center center;
+  cursor: grab;          /* 鼠标可拖 */
+  touch-action: none;    /* 阻止浏览器默认手势，允许 JS 接管 */
   user-select: none;
   -webkit-user-drag: none;
+  z-index: 10;
+}
+.animal-headband:active { cursor: grabbing; }
+
+/* ========= CSS 画的半圆形发箍底座 ========= */
+.headband-base {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 55%;  /* 发箍占发箍层下半部分 */
+  /* 用 border-radius 画一个半圆形（向上弯） */
+  border-top-left-radius: 50%;
+  border-top-right-radius: 50%;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  /* 奶油色 + 渐变 模拟塑料质感 */
+  background: linear-gradient(
+    180deg,
+    #f5ead2 0%,
+    #e8d9b0 50%,
+    #d4c18a 100%
+  );
+  /* 描边 + 阴影 */
+  border: 2px solid #b09a6e;
+  box-shadow:
+    /* 内层高光 */
+    inset 0 -4px 8px rgba(255, 255, 255, 0.4),
+    /* 外层投影 */
+    0 4px 12px rgba(0, 0, 0, 0.25);
+}
+/* 发箍内侧的小花装饰（用伪元素） */
+.headband-base::before {
+  content: "🌸 🌼 🌸 🌼 🌸";
+  position: absolute;
+  bottom: 6px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 12px;
+  letter-spacing: 4px;
+  opacity: 0.7;
+  white-space: nowrap;
+}
+
+/* ========= 动物 Emoji ========= */
+.headband-emoji {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 75%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 100%; /* 跟随父元素宽度缩放 */
+  /* 让 emoji 看起来有立体感 */
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.3));
+  line-height: 1;
 }
 
 /* 操作按钮 */
@@ -716,6 +777,13 @@ html, body {
   border-radius: 12px;
 }
 .btn-reset:hover { background: var(--border); color: var(--text); }
+
+.slider-tip {
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-light);
+  margin: 8px 0 4px;
+}
 
 /* 生成结果预览 */
 .photo-result-wrap {
