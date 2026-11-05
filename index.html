@@ -96,59 +96,75 @@
         </div>
       </div>
 
-      <!-- 大头贴合成区域 -->
+      <!-- DIY 大头贴区域 -->
       <div class="headband-section">
-        <h3>✨ 戴上你的动物耳朵！</h3>
+        <h3>✨ 戴上你的动物花环！</h3>
 
-        <!-- 预览容器：3:4 比例，头像 + 发箍叠加 -->
+        <!-- 照片编辑容器（3:4，html2canvas 截这个） -->
         <div class="headband-preview-wrap">
-          <div id="headband-container" class="headband-container">
+          <div id="photo-editor" class="photo-editor">
             <!-- 底层：用户照片 -->
             <img id="user-photo" class="user-photo" alt="你的照片" />
-            <!-- 上传占位（没照片时显示） -->
+            <!-- 贴纸层：所有用户添加的 emoji 贴纸都放这里 -->
+            <div id="stickers-layer" class="stickers-layer"></div>
+            <!-- 上传占位 -->
             <div id="upload-placeholder" class="upload-placeholder">
               <div class="upload-icon">📷</div>
               <div class="upload-text">点击上传你的照片<br/><span>正方形正面照效果最佳</span></div>
             </div>
-            <!-- 上层：可拖拽缩放旋转的发箍贴纸（CSS 画的半圆形发箍 + Emoji） -->
-            <div id="animal-headband" class="animal-headband" draggable="false">
-              <div class="headband-base"></div>          <!-- CSS 画的半圆形发箍底座 -->
-              <div class="headband-emoji" id="headband-emoji">🦊</div>  <!-- 动物 Emoji -->
-            </div>
           </div>
         </div>
 
-        <!-- 控制按钮 -->
-        <div class="headband-actions">
-          <button id="btn-upload-photo" class="btn btn-ghost">📸 上传照片</button>
-          <button id="btn-generate-photo" class="btn btn-primary">🎨 生成大头贴</button>
-          <!-- 隐藏的 file input -->
+        <!-- 控制器（上传后显示） -->
+        <div id="editor-controls" class="editor-controls hidden">
+          <!-- 当前选中贴纸的编辑工具 -->
+          <div id="sticker-editor" class="sticker-editor hidden">
+            <span class="control-label">🖐 大小</span>
+            <input type="range" id="sticker-scale" min="0.3" max="3" step="0.05" value="1" />
+            <span class="control-label">🔄 旋转</span>
+            <input type="range" id="sticker-rotate" min="-45" max="45" step="1" value="0" />
+            <button id="btn-delete-sticker" class="btn btn-ghost btn-delete">🗑 删除</button>
+          </div>
+          <div class="control-tip">💡 点击贴纸选中，拖拽移动，双击删除</div>
+
+          <!-- 底部 emoji 贴纸栏 -->
+          <div class="sticker-bar">
+            <div class="sticker-bar-title">🐾 你的专属贴纸</div>
+            <div id="animal-stickers" class="sticker-row"></div>
+            <div class="sticker-bar-title">🎨 通用装饰</div>
+            <div class="sticker-row">
+              <button class="sticker-btn" data-emoji="🌸">🌸</button>
+              <button class="sticker-btn" data-emoji="🌺">🌺</button>
+              <button class="sticker-btn" data-emoji="🌼">🌼</button>
+              <button class="sticker-btn" data-emoji="🌿">🌿</button>
+              <button class="sticker-btn" data-emoji="⭐">⭐</button>
+              <button class="sticker-btn" data-emoji="✨">✨</button>
+              <button class="sticker-btn" data-emoji="💖">💖</button>
+              <button class="sticker-btn" data-emoji="🎀">🎀</button>
+              <button class="sticker-btn" data-emoji="🎈">🎈</button>
+              <button class="sticker-btn" data-emoji="🦋">🦋</button>
+              <button class="sticker-btn" data-emoji="🌈">🌈</button>
+              <button class="sticker-btn" data-emoji="☁️">☁️</button>
+              <button class="sticker-btn" data-emoji="🌙">🌙</button>
+              <button class="sticker-btn" data-emoji="☀️">☀️</button>
+              <button class="sticker-btn" data-emoji="🍀">🍀</button>
+              <button class="sticker-btn" data-emoji="🎁">🎁</button>
+            </div>
+          </div>
+
+          <div class="btn-row">
+            <button id="btn-clear-all" class="btn btn-ghost">🧹 清空全部</button>
+            <button id="btn-save-photo" class="btn btn-primary">🎨 保存大头贴</button>
+          </div>
           <input type="file" id="photo-input" accept="image/*" style="display:none" />
         </div>
 
-        <!-- 调整滑块（只有大小和旋转——位置用拖拽） -->
-        <div id="slider-group" class="slider-group hidden">
-          <div class="slider-item">
-            <label>🖐 大小</label>
-            <input type="range" id="slider-scale" min="30" max="250" value="100" />
-          </div>
-          <div class="slider-item">
-            <label>🔄 旋转</label>
-            <input type="range" id="slider-rotate" min="-30" max="30" value="0" />
-          </div>
-          <div class="slider-tip">💡 提示：直接拖发箍就能移动到任意位置</div>
-          <button id="btn-reset-headband" class="btn btn-reset">重置位置</button>
-        </div>
-
-        <!-- 生成结果预览 -->
+        <!-- 合成结果预览 -->
         <div id="photo-result-wrap" class="photo-result-wrap hidden">
           <h4>⬇ 长按图片保存到相册</h4>
           <img id="generated-photo" class="generated-photo" alt="生成的大头贴" />
           <button id="btn-download-photo" class="btn btn-primary">💾 下载大头贴</button>
         </div>
-
-        <!-- 隐藏 Canvas（用于合成） -->
-        <canvas id="result-canvas" width="750" height="1000" style="display:none"></canvas>
       </div>
 
       <!-- 方法论说明 -->
@@ -176,6 +192,8 @@
   <!-- ========== Toast 提示 ========== -->
   <div id="toast" class="toast">✓ 图片已保存，去朋友圈发给朋友吧！</div>
 
+  <!-- html2canvas：把 DOM（emoji+CSS 拼贴）截图成 base64，比原生 Canvas 渲染 emoji 好 -->
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

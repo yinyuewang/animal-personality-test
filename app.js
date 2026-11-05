@@ -384,385 +384,307 @@ const HEADBAND_CONFIG = {
   "S_L_E_L_O_L_C_L": { emoji: "🐢", label: "箱龟" }
 };
 
-/* ---------- 大头贴状态：位置用百分比（相对容器），方便自适应 ---------- */
-let headbandState = {
+/* ---------- DIY 贴纸系统：状态 ---------- */
+let stickerState = {
   photoDataUrl: null,
   currentKey: null,
-  // 发箍位置（相对容器的百分比：0~100）
-  posX: 50,    // 默认居中
-  posY: 18,    // 默认在顶部（头顶位置）
-  scale: 1.0,  // 0.3~2.5
-  rotate: 0
+  stickers: [],      // [{id, emoji, x%, y%, scale, rotate}]
+  selectedId: null,
+  dragging: null     // {id, startX, startY, origX, origY}
 };
 
-/* ---------- 初始化：绑定事件（上传 + 滑块 + 拖拽 + 合成） ---------- */
+/* 16 种动物的专属 emoji 列表（+ 相关的自然元素） */
+const ANIMAL_EMOJI = {
+  "S_H_E_H_O_H_C_H": { main: "🦝", extra: ["🐾", "🌵", "☀️", "👀"] },
+  "S_H_E_H_O_H_C_L": { main: "🐒", extra: ["🍌", "🌴", "👀", "🙈"] },
+  "S_H_E_H_O_L_C_H": { main: "🐑", extra: ["☁️", "🌿", "💤", "🌾"] },
+  "S_H_E_H_O_L_C_L": { main: "🐦", extra: ["🌰", "🏠", "🪺", "🌿"] },
+  "S_H_E_L_O_H_C_H": { main: "🐬", extra: ["🌊", "🌊", "🐟", "💫"] },
+  "S_H_E_L_O_H_C_L": { main: "🐓", extra: ["🐣", "🌽", "🥚", "🍂"] },
+  "S_H_E_L_O_L_C_H": { main: "🐀", extra: ["🕳️", "💤", "🧑‍🤝‍🧑", "❤️"] },
+  "S_H_E_L_O_L_C_L": { main: "🕊️", extra: ["🏠", "🪺", "💤", "☁️"] },
+  "S_L_E_H_O_H_C_H": { main: "🦏", extra: ["🦣", "🌴", "🌑", "💪"] },
+  "S_L_E_H_O_H_C_L": { main: "🦊", extra: ["🍂", "🍁", "🌙", "👀"] },
+  "S_L_E_H_O_L_C_H": { main: "🦔", extra: ["🍂", "🌿", "💤", "🏠"] },
+  "S_L_E_H_O_L_C_L": { main: "🐱", extra: ["🐾", "🧶", "🏠", "💤"] },
+  "S_L_E_L_O_H_C_H": { main: "🦧", extra: ["🌴", "🍌", "🦍", "🌿"] },
+  "S_L_E_L_O_H_C_L": { main: "🐻", extra: ["🍯", "🌲", "💤", "🥄"] },
+  "S_L_E_L_O_L_C_H": { main: "🐘", extra: ["🌴", "💧", "🦣", "🌿"] },
+  "S_L_E_L_O_L_C_L": { main: "🐢", extra: ["🌿", "💧", "🏡", "☀️"] }
+};
+
+/* ---------- 初始化 DIY 编辑器 ---------- */
 function initHeadband() {
-  // 上传照片
-  $("headband-container").addEventListener("click", function(e) {
-    // 点击发箍本身不触发上传
-    if (e.target.closest("#animal-headband")) return;
-    $("photo-input").click();
+  const editor = $("photo-editor");
+  const stickersLayer = $("stickers-layer");
+
+  // 点击编辑区（不是贴纸也不是按钮）→ 取消选中
+  editor.addEventListener("click", function(e) {
+    if (e.target.closest(".sticker")) return;
+    if (e.target.closest(".sticker-btn")) return;
+    if (e.target === editor || e.target === stickersLayer || e.target === $("user-photo")) {
+      if (stickerState.photoDataUrl) {
+        deselectSticker();
+      } else {
+        $("photo-input").click();
+      }
+    }
   });
-  $("btn-upload-photo").addEventListener("click", function(e) {
-    e.stopPropagation();
-    $("photo-input").click();
-  });
+
+  // 文件输入
   $("photo-input").addEventListener("change", function(e) {
     const file = e.target.files[0];
     if (!file) return;
     const reader = new FileReader();
     reader.onload = function(ev) {
-      headbandState.photoDataUrl = ev.target.result;
+      stickerState.photoDataUrl = ev.target.result;
       applyPhoto();
     };
     reader.readAsDataURL(file);
   });
 
-  // 滑块联动 → 更新 state → 应用 transform
-  $("slider-scale").addEventListener("input", function() {
-    headbandState.scale = parseFloat(this.value) / 100;  // 30~250 → 0.3~2.5
-    updateHeadbandTransform();
-  });
-  $("slider-rotate").addEventListener("input", function() {
-    headbandState.rotate = parseFloat(this.value);
-    updateHeadbandTransform();
+  // 贴纸栏按钮 → 添加贴纸
+  document.querySelectorAll(".sticker-btn").forEach(btn => {
+    btn.addEventListener("click", function(e) {
+      e.stopPropagation();
+      addSticker(this.dataset.emoji);
+    });
   });
 
-  // 重置按钮
-  $("btn-reset-headband").addEventListener("click", resetHeadband);
-
-  // 生成大头贴 + 下载
-  $("btn-generate-photo").addEventListener("click", generateComposite);
-  $("btn-download-photo").addEventListener("click", function() {
-    const img = $("generated-photo");
-    const a = document.createElement("a");
-    a.href = img.src;
-    a.download = "我的动物大头贴.png";
-    a.click();
+  // 清空全部
+  $("btn-clear-all").addEventListener("click", function() {
+    if (stickerState.stickers.length === 0) return;
+    if (confirm("确定清空所有贴纸吗？")) {
+      stickerState.stickers = [];
+      stickerState.selectedId = null;
+      renderStickers();
+      updateEditorToolbar();
+    }
   });
 
-  // 发箍拖拽（鼠标 + 触摸）
-  bindDrag();
+  // 保存大头贴
+  $("btn-save-photo").addEventListener("click", generateComposite);
+
+  // 删除选中贴纸
+  $("btn-delete-sticker").addEventListener("click", function() {
+    removeSticker(stickerState.selectedId);
+  });
+
+  // 选中贴纸的滑块
+  $("sticker-scale").addEventListener("input", function() {
+    if (!stickerState.selectedId) return;
+    const s = stickerState.stickers.find(x => x.id === stickerState.selectedId);
+    if (s) { s.scale = parseFloat(this.value); renderStickers(); }
+  });
+  $("sticker-rotate").addEventListener("input", function() {
+    if (!stickerState.selectedId) return;
+    const s = stickerState.stickers.find(x => x.id === stickerState.selectedId);
+    if (s) { s.rotate = parseFloat(this.value); renderStickers(); }
+  });
 }
 
-/* ---------- 拖拽逻辑：支持鼠标 + 触摸 ---------- */
-function bindDrag() {
-  const band = $("animal-headband");
-  const container = $("headband-container");
+/* ---------- 渲染"动物专属贴纸"栏 ---------- */
+function renderAnimalStickers(key) {
+  const row = $("animal-stickers");
+  row.innerHTML = "";
+  const conf = ANIMAL_EMOJI[key];
+  if (!conf) return;
+  const all = [conf.main, ...conf.extra];
+  all.forEach(emoji => {
+    const btn = document.createElement("button");
+    btn.className = "sticker-btn";
+    btn.dataset.emoji = emoji;
+    btn.textContent = emoji;
+    btn.addEventListener("click", function() { addSticker(emoji); });
+    row.appendChild(btn);
+  });
+}
+
+/* ---------- 添加一个贴纸 ---------- */
+let _stickerId = 0;
+function addSticker(emoji) {
+  const s = {
+    id: ++_stickerId,
+    emoji: emoji,
+    x: 50 + (Math.random() * 20 - 10),  // 中心附近随机
+    y: 25 + (Math.random() * 15 - 7),   // 偏顶部
+    scale: 1.0,
+    rotate: Math.random() * 20 - 10
+  };
+  stickerState.stickers.push(s);
+  stickerState.selectedId = s.id;
+  renderStickers();
+  updateEditorToolbar();
+}
+
+/* ---------- 删除一个贴纸 ---------- */
+function removeSticker(id) {
+  stickerState.stickers = stickerState.stickers.filter(s => s.id !== id);
+  if (stickerState.selectedId === id) stickerState.selectedId = null;
+  renderStickers();
+  updateEditorToolbar();
+}
+
+/* ---------- 渲染所有贴纸到 DOM ---------- */
+function renderStickers() {
+  const layer = $("stickers-layer");
+  layer.innerHTML = "";
+  stickerState.stickers.forEach(s => {
+    const el = document.createElement("div");
+    el.className = "sticker" + (s.id === stickerState.selectedId ? " selected" : "");
+    el.textContent = s.emoji;
+    // 用百分比绝对定位
+    el.style.left = s.x + "%";
+    el.style.top = s.y + "%";
+    el.style.transform =
+      "translate(-50%, -50%) scale(" + s.scale + ") rotate(" + s.rotate + "deg)";
+    // 让 sticker 上的 events 指向
+    el.dataset.id = s.id;
+    bindStickerEvents(el, s);
+    layer.appendChild(el);
+  });
+}
+
+/* ---------- 贴纸事件（选中 + 拖拽 + 双击删除） ---------- */
+function bindStickerEvents(el, sticker) {
   let dragging = false;
-  let startX = 0, startY = 0;     // 拖拽起始点
-  let startPosX = 0, startPosY = 0; // 发箍起始位置
+  let startX, startY, origX, origY;
+  let clickTimer = null;
+  let moved = false;
 
   function onDown(e) {
     dragging = true;
+    moved = false;
     const p = getPoint(e);
     startX = p.x; startY = p.y;
-    startPosX = headbandState.posX;
-    startPosY = headbandState.posY;
+    origX = sticker.x; origY = sticker.y;
+    selectSticker(sticker.id);
     e.preventDefault();
   }
   function onMove(e) {
     if (!dragging) return;
     const p = getPoint(e);
-    const rect = container.getBoundingClientRect();
-    // 移动距离 → 相对容器的百分比
+    const rect = $("stickers-layer").getBoundingClientRect();
     const dx = ((p.x - startX) / rect.width) * 100;
     const dy = ((p.y - startY) / rect.height) * 100;
-    // 更新 state（clamp 0~100）
-    headbandState.posX = Math.max(0, Math.min(100, startPosX + dx));
-    headbandState.posY = Math.max(0, Math.min(100, startPosY + dy));
-    updateHeadbandTransform();
+    sticker.x = Math.max(0, Math.min(100, origX + dx));
+    sticker.y = Math.max(0, Math.min(100, origY + dy));
+    moved = true;
+    renderStickers();
   }
   function onUp() { dragging = false; }
 
-  band.addEventListener("mousedown", onDown);
+  el.addEventListener("mousedown", onDown);
   window.addEventListener("mousemove", onMove);
   window.addEventListener("mouseup", onUp);
-  band.addEventListener("touchstart", onDown, { passive: false });
+  el.addEventListener("touchstart", onDown, { passive: false });
   window.addEventListener("touchmove", onMove, { passive: false });
   window.addEventListener("touchend", onUp);
+
+  // 双击删除（用 dblclick 事件）
+  el.addEventListener("dblclick", function(e) {
+    e.stopPropagation();
+    removeSticker(sticker.id);
+  });
 }
-/* 从 mouse/touch 事件里拿坐标 */
-function getPoint(e) {
-  if (e.touches && e.touches[0]) {
-    return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+
+/* ---------- 选中/取消选中 ---------- */
+function selectSticker(id) {
+  stickerState.selectedId = id;
+  renderStickers();
+  updateEditorToolbar();
+}
+function deselectSticker() {
+  stickerState.selectedId = null;
+  renderStickers();
+  updateEditorToolbar();
+}
+
+/* ---------- 更新编辑工具栏的滑块值 ---------- */
+function updateEditorToolbar() {
+  const editor = $("sticker-editor");
+  const tip = document.querySelector(".control-tip");
+  if (stickerState.selectedId) {
+    const s = stickerState.stickers.find(x => x.id === stickerState.selectedId);
+    $("sticker-scale").value = s.scale;
+    $("sticker-rotate").value = s.rotate;
+    editor.classList.remove("hidden");
+    if (tip) tip.textContent = "💡 拖拽移动，双击删除，或用下方滑块调整";
+  } else {
+    editor.classList.add("hidden");
+    if (tip) tip.textContent = "💡 点击贴纸栏添加装饰，点击贴纸后可拖拽/缩放";
   }
-  if (e.changedTouches && e.changedTouches[0]) {
-    return { x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY };
-  }
-  return { x: e.clientX, y: e.clientY };
 }
 
 /* ---------- 应用用户照片 ---------- */
 function applyPhoto() {
-  const container = $("headband-container");
+  const editor = $("photo-editor");
   const img = $("user-photo");
   const placeholder = $("upload-placeholder");
+  const controls = $("editor-controls");
 
-  img.src = headbandState.photoDataUrl;
-  container.classList.add("has-photo");
+  img.src = stickerState.photoDataUrl;
+  editor.classList.add("has-photo");
   placeholder.classList.add("hidden");
-  $("slider-group").classList.remove("hidden");
+  controls.classList.remove("hidden");
+  renderStickers();
+  updateEditorToolbar();
 }
 
-/* ---------- 加载当前动物对应的发箍（设置 emoji，重置位置） ---------- */
+/* ---------- 加载当前动物 → 渲染专属贴纸栏 ---------- */
 function loadHeadband(animalKey) {
-  headbandState.currentKey = animalKey;
-  const config = HEADBAND_CONFIG[animalKey];
-  const band = $("animal-headband");
-  const emojiEl = $("headband-emoji");
-
-  if (!config) { band.style.display = "none"; return; }
-
-  // 设置 emoji
-  emojiEl.textContent = config.emoji;
-  band.style.display = "block";
-
-  // 重置到默认位置
-  resetHeadband();
+  stickerState.currentKey = animalKey;
+  renderAnimalStickers(animalKey);
 }
 
-/* ---------- 把 state 应用到 CSS transform ---------- */
-function updateHeadbandTransform() {
-  const s = headbandState;
-  const band = $("animal-headband");
-  if (!band) return;
-  band.style.left = s.posX + "%";
-  band.style.top  = s.posY + "%";
-  band.style.transform =
-    "translate(-50%, -50%) scale(" + s.scale + ") rotate(" + s.rotate + "deg)";
+/* 工具：从事件取坐标 */
+function getPoint(e) {
+  if (e.touches && e.touches[0]) return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+  if (e.changedTouches && e.changedTouches[0]) return { x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY };
+  return { x: e.clientX, y: e.clientY };
 }
 
-/* ---------- 重置发箍位置/大小 ---------- */
-function resetHeadband() {
-  headbandState.posX = 50;
-  headbandState.posY = 18;
-  headbandState.scale = 1.0;
-  headbandState.rotate = 0;
-  $("slider-scale").value = 100;   // 滑块用 100 表示 scale=1.0
-  $("slider-rotate").value = 0;
-  updateHeadbandTransform();
-}
-
-/* ---------- Canvas 合成导出 ---------- */
+/* ---------- html2canvas 合成 ---------- */
 function generateComposite() {
-  if (!headbandState.photoDataUrl) {
+  if (!stickerState.photoDataUrl) {
     alert("请先上传你的照片哦~");
     return;
   }
 
-  const canvas = $("result-canvas");
-  const ctx = canvas.getContext("2d");
-  const W = canvas.width;   // 750
-  const H = canvas.height;  // 1000 (3:4)
+  // 取消选中（避免截图里带虚线框和 🗑 角标）
+  const hadSelection = stickerState.selectedId !== null;
+  if (hadSelection) {
+    // 临时清除 selected class
+    document.querySelectorAll(".sticker.selected").forEach(el => el.classList.remove("selected"));
+  }
 
-  ctx.clearRect(0, 0, W, H);
+  const btn = $("btn-save-photo");
+  const orig = btn.textContent;
+  btn.textContent = "生成中...";
+  btn.disabled = true;
 
-  // 1) 绘制用户照片（居中 cover 裁切，保持预览与合成一致）
-  const userImg = new Image();
-  userImg.crossOrigin = "anonymous";
-  userImg.onload = function() {
-    drawCover(ctx, userImg, 0, 0, W, H);
-
-    // 2) 绘制发箍
-    drawHeadbandOnCanvas(ctx, W, H);
-
-    // 3) 导出为 dataURL
-    const dataUrl = canvas.toDataURL("image/png");
-    const resultWrap = $("photo-result-wrap");
-    resultWrap.classList.remove("hidden");
-    $("generated-photo").src = dataUrl;
-    $("generated-photo").style.display = "block";
-
-    // 滚动到结果
-    setTimeout(function() {
-      resultWrap.scrollIntoView({ behavior: "smooth", block: "center" });
-    }, 100);
-
-    // Toast
+  html2canvas($("photo-editor"), {
+    backgroundColor: null,
+    scale: 3,
+    useCORS: true,
+    allowTaint: true,
+    logging: false
+  }).then(function(canvas) {
+    if (hadSelection) renderStickers();  // 恢复选中
+    $("generated-photo").src = canvas.toDataURL("image/png");
+    $("photo-result-wrap").classList.remove("hidden");
+    btn.textContent = orig;
+    btn.disabled = false;
+    setTimeout(() => $("photo-result-wrap").scrollIntoView({ behavior: "smooth", block: "center" }), 100);
+    $("toast").textContent = "✓ 大头贴已生成！长按图片保存";
     $("toast").classList.add("show");
-    setTimeout(function() { $("toast").classList.remove("show"); }, 2200);
-  };
-  userImg.src = headbandState.photoDataUrl;
-}
-
-/* ---------- Canvas 辅助：cover 裁切 ---------- */
-function drawCover(ctx, img, x, y, w, h) {
-  const iw = img.naturalWidth;
-  const ih = img.naturalHeight;
-  const scale = Math.max(w / iw, h / ih);
-  const dw = iw * scale;
-  const dh = ih * scale;
-  const dx = x + (w - dw) / 2;
-  const dy = y + (h - dh) / 2;
-  ctx.drawImage(img, dx, dy, dw, dh);
-}
-
-/* ---------- Canvas 辅助：画花环（绿色藤条 + 花朵 + 叶子 + Emoji） ---------- */
-function drawHeadbandOnCanvas(ctx, W, H) {
-  const band = $("animal-headband");
-  const emojiEl = $("headband-emoji");
-  if (!band || band.style.display === "none") return;
-
-  const emoji = emojiEl ? emojiEl.textContent : "🦊";
-  if (!emoji) return;
-
-  const container = $("headband-container");
-  const rect = container.getBoundingClientRect();
-  const cw = rect.width;
-  const ch = rect.height;
-
-  const PX = W / cw;
-  const s = headbandState;
-
-  // 花环尺寸：CSS width: 45% 容器；高度 = 宽度 * 0.85（更矮更像花环）
-  const ringW = cw * 0.45 * PX * s.scale;
-  const ringH = ringW * 0.55;
-  // 锚点
-  const cx = (cw * s.posX / 100) * PX;
-  const cy = (ch * s.posY / 100) * PX;
-
-  ctx.save();
-  ctx.translate(cx, cy);
-  ctx.rotate((s.rotate * Math.PI) / 180);
-
-  const halfW = ringW / 2;
-  const bandThickness = ringH * 0.28;  // 藤条粗细
-
-  // ======== 1. 画花环（绿色藤条弧形） ========
-  // 阴影层（先画一个偏移的深绿环制造投影）
-  ctx.save();
-  ctx.translate(0, ringH * 0.18);
-  ctx.strokeStyle = "rgba(0,0,0,0.3)";
-  ctx.lineWidth = bandThickness;
-  ctx.lineCap = "round";
-  drawArc(ctx, 0, 0, halfW, ringH, bandThickness);
-  ctx.restore();
-
-  // 藤条主体：用 3 层渐变叠加
-  drawArcGradient(ctx, 0, 0, halfW, ringH, bandThickness,
-    ["#5d8a3e", "#7da84f", "#4a7230", "#3a5d26"]);
-
-  // 藤条高光（顶部亮色细线）
-  ctx.strokeStyle = "rgba(255,255,255,0.35)";
-  ctx.lineWidth = bandThickness * 0.25;
-  drawArcHighlight(ctx, 0, 0, halfW, ringH, bandThickness);
-
-  // 藤条描边
-  ctx.strokeStyle = "#2d4a1a";
-  ctx.lineWidth = 2 * s.scale;
-  drawArcOutline(ctx, 0, 0, halfW, ringH, bandThickness);
-
-  // ======== 2. 画花朵（沿藤条分布 5 朵） ========
-  drawFlowerCluster(ctx, -halfW * 0.75, ringH * 0.05, "#ff6b8a", "#ffe066", s.scale);
-  drawFlowerCluster(ctx, -halfW * 0.35, -ringH * 0.12, "#ffd700", "#ff6b8a", s.scale);
-  drawFlowerCluster(ctx, 0, -ringH * 0.22, "#b4a0e0", "#fff4b0", s.scale);
-  drawFlowerCluster(ctx, halfW * 0.35, -ringH * 0.12, "#ff8fa3", "#ffe066", s.scale);
-  drawFlowerCluster(ctx, halfW * 0.75, ringH * 0.05, "#ff6b8a", "#ffe066", s.scale);
-
-  // ======== 3. 画小叶子 ========
-  drawLeaf(ctx, -halfW * 0.55, -ringH * 0.18, -20, s.scale);
-  drawLeaf(ctx, -halfW * 0.15, -ringH * 0.28, 25, s.scale);
-  drawLeaf(ctx, halfW * 0.15, -ringH * 0.28, -25, s.scale);
-  drawLeaf(ctx, halfW * 0.55, -ringH * 0.18, 20, s.scale);
-
-  // ======== 4. 画 Emoji（花环顶部中间） ========
-  const emojiSize = ringW * 0.5;
-  ctx.font = emojiSize + "px Apple Color Emoji, Segoe UI Emoji, sans-serif";
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  // 先画阴影层
-  ctx.save();
-  ctx.font = emojiSize + "px sans-serif";
-  // 主 emoji 渲染（Canvas 直接 fillText 不支持彩色 emoji 阴影，跳过）
-  ctx.restore();
-  ctx.fillText(emoji, 0, -ringH * 0.05);
-
-  ctx.restore();
-}
-
-/* --- Canvas 辅助：画弧形 --- */
-function drawArc(ctx, cx, cy, halfW, ringH, thickness) {
-  ctx.beginPath();
-  ctx.arc(cx, cy, halfW, Math.PI, 0, false);
-  ctx.stroke();
-}
-/* 带渐变的弧形 */
-function drawArcGradient(ctx, cx, cy, halfW, ringH, thickness, colors) {
-  // 用 4 段弧分别画，每段渐变
-  const segments = 4;
-  for (let i = 0; i < segments; i++) {
-    const a0 = Math.PI + (i / segments) * Math.PI;
-    const a1 = Math.PI + ((i + 1) / segments) * Math.PI;
-    ctx.beginPath();
-    ctx.strokeStyle = colors[i % colors.length];
-    ctx.lineWidth = thickness;
-    ctx.lineCap = "round";
-    ctx.arc(cx, cy, halfW, a0, a1, false);
-    ctx.stroke();
-  }
-}
-/* 高光细线 */
-function drawArcHighlight(ctx, cx, cy, halfW, ringH, thickness) {
-  ctx.beginPath();
-  ctx.arc(cx, cy, halfW, Math.PI + 0.15, Math.PI - 0.15, true);
-  ctx.stroke();
-}
-/* 外轮廓 */
-function drawArcOutline(ctx, cx, cy, halfW, ringH, thickness) {
-  ctx.beginPath();
-  ctx.lineWidth = thickness + 4;
-  ctx.strokeStyle = "transparent";
-  ctx.arc(cx, cy, halfW, Math.PI, 0, false);
-  ctx.stroke();
-  // 真正的描边用更细的线在藤条两侧
-  ctx.save();
-  ctx.beginPath();
-  ctx.lineWidth = 1.5;
-  ctx.strokeStyle = "#2d4a1a";
-  // 上边缘
-  ctx.beginPath();
-  ctx.arc(cx, cy, halfW, Math.PI, 0, false);
-  ctx.stroke();
-  ctx.restore();
-}
-
-/* --- Canvas 辅助：画 5 瓣小花 --- */
-function drawFlowerCluster(ctx, x, y, petalColor, centerColor, scale) {
-  const r = 7 * scale;
-  ctx.save();
-  ctx.translate(x, y);
-  for (let i = 0; i < 5; i++) {
-    const a = (i * 72 - 90) * Math.PI / 180;
-    const px = Math.cos(a) * r;
-    const py = Math.sin(a) * r;
-    ctx.beginPath();
-    ctx.ellipse(px, py, r * 0.5, r, a, 0, Math.PI * 2);
-    ctx.fillStyle = petalColor;
-    ctx.fill();
-  }
-  // 花心
-  ctx.beginPath();
-  ctx.arc(0, 0, r * 0.4, 0, Math.PI * 2);
-  ctx.fillStyle = centerColor;
-  ctx.fill();
-  ctx.restore();
-}
-
-/* --- Canvas 辅助：画叶子 --- */
-function drawLeaf(ctx, x, y, rotate, scale) {
-  ctx.save();
-  ctx.translate(x, y);
-  ctx.rotate(rotate * Math.PI / 180);
-  ctx.beginPath();
-  ctx.ellipse(0, 0, 6 * scale, 12 * scale, 0, 0, Math.PI * 2);
-  const grad = ctx.createLinearGradient(-6 * scale, 0, 6 * scale, 0);
-  grad.addColorStop(0, "#3a5d26");
-  grad.addColorStop(0.5, "#7da84f");
-  grad.addColorStop(1, "#4a7230");
-  ctx.fillStyle = grad;
-  ctx.fill();
-  ctx.restore();
+    setTimeout(() => $("toast").classList.remove("show"), 2500);
+  }).catch(function(err) {
+    if (hadSelection) renderStickers();
+    btn.textContent = orig;
+    btn.disabled = false;
+    alert("生成失败：" + err.message);
+  });
 }
 
 /* ---------- 结果展示 ---------- */

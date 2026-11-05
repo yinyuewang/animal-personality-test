@@ -573,30 +573,44 @@ html, body {
   text-align: center;
 }
 
-/* 预览容器：3:4 比例 */
+/* 预览容器 */
 .headband-preview-wrap {
   max-width: 320px;
   margin: 0 auto 20px;
 }
-.headband-container {
+
+/* ========= photo-editor（3:4 比例，html2canvas 截取的就是这个） ========= */
+.photo-editor {
   position: relative;
   width: 100%;
-  padding-top: 133%; /* 3:4 比例 */
-  background: var(--bg-warm);
+  padding-top: 133%;    /* 3:4 比例 */
+  background: #e8e4df;   /* 温暖米灰色，placeholder 时显示 */
   border-radius: var(--radius);
   overflow: hidden;
-  border: 2px dashed var(--primary-light);
+  border: 2px dashed #b0a89a;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
 }
-.user-photo {
+/* 有照片后取消虚线边框，背景白色 */
+.photo-editor.has-photo {
+  border-style: solid;
+  border-color: var(--border);
+  background: #fff;
+}
+
+/* 用户照片 */
+.photo-editor .user-photo {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  display: none; /* 有照片时才显示 */
+  display: none;
 }
-.headband-container.has-photo .user-photo { display: block; }
+.photo-editor.has-photo .user-photo { display: block; }
 
+/* ========= 上传 placeholder ========= */
 .upload-placeholder {
   position: absolute;
   inset: 0;
@@ -604,208 +618,171 @@ html, body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  color: var(--text-light);
+  color: #9b8f80;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: background 0.2s;
 }
 .upload-placeholder:hover {
-  background: rgba(107, 142, 122, 0.06);
+  background: rgba(107, 142, 122, 0.08);
   color: var(--primary-dark);
 }
 .upload-placeholder.hidden { display: none; }
-.upload-icon { font-size: 48px; margin-bottom: 12px; }
+.upload-icon {
+  font-size: 52px;
+  margin-bottom: 12px;
+  opacity: 0.6;
+}
 .upload-text {
-  font-size: 14px;
+  font-size: 15px;
   text-align: center;
   line-height: 1.6;
 }
 .upload-text span {
   font-size: 12px;
-  color: #aaa;
+  color: #b0a89a;
   display: block;
   margin-top: 4px;
 }
 
-/* 发箍层：绝对定位，可拖拽 */
-.animal-headband {
+/* ============================================================
+ *   DIY 贴纸系统 —— 底部 emoji 栏 + 照片上可拖拽贴纸
+ * ============================================================ */
+
+/* ---------- 贴纸层（放在 photo-editor 之上） ---------- */
+.stickers-layer {
   position: absolute;
-  /* 默认位置：容器中心偏上 */
-  top: 18%;
-  left: 50%;
-  width: 45%;           /* 发箍默认宽度 = 容器宽度的 45% */
-  /* transform: translate(-50%, -50%) scale(1) rotate(0deg) 由 JS 控制 */
-  transform: translate(-50%, -50%) scale(1) rotate(0deg);
-  transform-origin: center center;
-  cursor: grab;          /* 鼠标可拖 */
-  touch-action: none;    /* 阻止浏览器默认手势，允许 JS 接管 */
+  top: 0; left: 0; right: 0; bottom: 0;
+  pointer-events: none;   /* 让空白区的点击穿透 */
+  z-index: 5;
+}
+.stickers-layer .sticker {
+  position: absolute;
+  pointer-events: auto;
+  cursor: grab;
+  font-size: 48px;
+  line-height: 1;
+  filter: drop-shadow(1px 2px 4px rgba(0,0,0,0.35));
+  /* transform 由 JS 控制：translate + scale + rotate */
   user-select: none;
   -webkit-user-drag: none;
-  z-index: 10;
 }
-.animal-headband:active { cursor: grabbing; }
-
-/* ========= 花环底座（藤条弧形 + 花朵 + 叶子 + 立体光影） ========= */
-.headband-base {
-  position: absolute;
-  bottom: -20%;
-  left: 0;
-  width: 100%;
-  height: 75%;  /* 花环占发箍层下半部分 */
-  /* 弧形藤条：用 border-radius 画向上弯的半圆环 */
-  border-top-left-radius: 55%;
-  border-top-right-radius: 55%;
-  border-bottom-left-radius: 8%;
-  border-bottom-right-radius: 8%;
-  /* 深绿渐变模拟藤条 */
-  background: linear-gradient(
-    180deg,
-    #5d8a3e 0%,
-    #7da84f 30%,
-    #4a7230 70%,
-    #3a5d26 100%
-  );
-  border: 2.5px solid #2d4a1a;
-  /* 多层阴影制造立体感 */
-  box-shadow:
-    /* 内侧高光（顶部亮） */
-    inset 0 3px 6px rgba(255, 255, 255, 0.35),
-    /* 内侧阴影（底部暗） */
-    inset 0 -6px 12px rgba(0, 0, 0, 0.35),
-    /* 外侧投影（让花环"浮"在照片上） */
-    0 6px 16px rgba(0, 0, 0, 0.35),
-    /* 下方模糊大阴影 */
-    0 12px 28px rgba(0, 0, 0, 0.2);
+.stickers-layer .sticker:active { cursor: grabbing; }
+/* 选中状态：虚线框 + 角标 */
+.stickers-layer .sticker.selected {
+  outline: 2px dashed var(--primary, #6b8f5a);
+  outline-offset: 4px;
+  border-radius: 4px;
 }
-
-/* 花朵装饰（多个伪元素 + 背景径向渐变画小花） */
-.headband-base::before,
-.headband-base::after {
-  content: "";
+.stickers-layer .sticker.selected::after {
+  content: "🗑";
   position: absolute;
-  /* 一朵小花 = 多层 box-shadow 堆出花瓣 */
-  width: 14px;
-  height: 14px;
+  top: -18px;
+  right: -18px;
+  font-size: 16px;
+  background: #fff;
   border-radius: 50%;
-  background: radial-gradient(circle, #ffe066 30%, transparent 30%);
-  /* 粉色花瓣 + 黄色花心 */
-  box-shadow:
-    0 -10px 0 -2px #ff6b8a,   /* 上花瓣 */
-    10px -5px 0 -2px #ff8fa3, /* 右上花瓣 */
-    10px 5px 0 -2px #ff6b8a,  /* 右下花瓣 */
-    0 10px 0 -2px #ff8fa3,    /* 下花瓣 */
-    -10px 5px 0 -2px #ff6b8a, /* 左下花瓣 */
-    -10px -5px 0 -2px #ff8fa3,/* 左上花瓣 */
-    /* 中心黄色花心 */
-    0 0 0 1.5px #ffe066;
-}
-/* 左花簇 */
-.headband-base::before {
-  left: 8%;
-  bottom: 8%;
-  transform: scale(0.9);
-}
-/* 右花簇（紫色） */
-.headband-base::after {
-  right: 8%;
-  bottom: 10%;
-  transform: scale(0.8);
-  background: radial-gradient(circle, #fff4b0 30%, transparent 30%);
-  box-shadow:
-    0 -10px 0 -2px #b4a0e0,
-    10px -5px 0 -2px #c4b0f0,
-    10px 5px 0 -2px #b4a0e0,
-    0 10px 0 -2px #c4b0f0,
-    -10px 5px 0 -2px #b4a0e0,
-    -10px -5px 0 -2px #c4b0f0,
-    0 0 0 1.5px #fff4b0;
-}
-
-/* ====== 额外小花（用 .headband-extra 类挂在花环层上） ====== */
-.headband-extras {
-  position: absolute;
-  bottom: -15%;
-  left: 0;
-  right: 0;
+  padding: 2px;
+  border: 1px solid #ddd;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
   pointer-events: none;
 }
-.headband-extras .flower {
-  position: absolute;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
+
+/* ---------- 贴纸编辑工具栏（选中贴纸后显示） ---------- */
+.sticker-editor {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg-card, #fff);
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--border, #e8e4dc);
+  margin-bottom: 12px;
 }
-.headband-extras .leaf {
-  position: absolute;
-  width: 14px;
-  height: 7px;
-  border-radius: 50%;
-  background: linear-gradient(90deg, #3a5d26, #7da84f);
-  opacity: 0.85;
+.sticker-editor input[type="range"] {
+  flex: 1;
+  min-width: 80px;
+}
+.btn-delete {
+  color: #c9443a;
+  border-color: #e8c0c0;
+}
+.btn-delete:hover {
+  background: #fff0f0;
 }
 
-/* ====== 动物 Emoji（更大更突出） ====== */
-.headband-emoji {
-  position: absolute;
-  top: -10%;
-  left: 0;
-  right: 0;
-  height: 80%;
+/* ---------- 底部 emoji 贴纸栏 ---------- */
+.sticker-bar {
+  background: var(--bg-card, #fff);
+  border: 1px solid var(--border, #e8e4dc);
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 12px;
+}
+.sticker-bar-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-light, #8a7f6e);
+  margin-bottom: 6px;
+}
+.sticker-row {
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  margin-bottom: 8px;
+  /* 隐藏滚动条但保留功能 */
+  scrollbar-width: thin;
+}
+.sticker-row:last-child { margin-bottom: 0; }
+.sticker-btn {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  font-size: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
-  /* emoji 大小 = 花环层宽度的 55% */
-  font-size: 55%;
-  filter:
-    /* 立体感：右下偏移的投影 */
-    drop-shadow(2px 3px 0 rgba(0, 0, 0, 0.25))
-    drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+  background: #faf8f4;
+  border: 1px solid #e8e4dc;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
   line-height: 1;
 }
-
-/* 花环的"叶子"装饰（用 emoji 伪元素） */
-.headband-leaves {
-  position: absolute;
-  bottom: -25%;
-  left: 0;
-  right: 0;
-  font-size: 14px;
-  letter-spacing: 6px;
-  text-align: center;
-  opacity: 0.8;
-  color: #2d4a1a;
-  text-shadow: 0 1px 2px rgba(255,255,255,0.3);
+.sticker-btn:hover {
+  transform: translateY(-2px) scale(1.1);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+  background: #fff;
+}
+.sticker-btn:active {
+  transform: scale(0.95);
 }
 
-/* 操作按钮 */
-.headband-actions {
-  display: flex;
-  gap: 12px;
-  justify-content: center;
-  flex-wrap: wrap;
-  margin-bottom: 16px;
-}
+/* 滚动条美化（Webkit） */
+.sticker-row::-webkit-scrollbar { height: 6px; }
+.sticker-row::-webkit-scrollbar-track { background: transparent; }
+.sticker-row::-webkit-scrollbar-thumb { background: #ddd; border-radius: 3px; }
 
-/* 滑块组 */
-.slider-group {
+/* ========= 控制器 ========= */
+.editor-controls {
   background: var(--bg-warm);
   border-radius: var(--radius-sm);
   padding: 16px 20px;
   margin-bottom: 20px;
 }
-.slider-item {
+.control-row {
   display: flex;
   align-items: center;
   gap: 12px;
   margin-bottom: 12px;
 }
-.slider-item:last-of-type { margin-bottom: 12px; }
-.slider-item label {
+.control-label {
   width: 60px;
   font-size: 13px;
   color: var(--text-light);
   flex-shrink: 0;
 }
-.slider-item input[type="range"] {
+.control-row input[type="range"] {
   flex: 1;
   height: 6px;
   -webkit-appearance: none;
@@ -815,11 +792,9 @@ html, body {
   outline: none;
   cursor: pointer;
 }
-.slider-item input[type="range"]::-webkit-slider-thumb {
+.control-row input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
-  appearance: none;
-  width: 22px;
-  height: 22px;
+  width: 22px; height: 22px;
   border-radius: 50%;
   background: var(--primary);
   border: 3px solid white;
@@ -827,40 +802,37 @@ html, body {
   cursor: pointer;
   transition: transform 0.15s;
 }
-.slider-item input[type="range"]::-webkit-slider-thumb:hover {
-  transform: scale(1.15);
-}
-.slider-item input[type="range"]::-moz-range-thumb {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: var(--primary);
-  border: 3px solid white;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-  cursor: pointer;
-}
+.control-row input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.15); }
 
-.btn-reset {
-  display: block;
-  margin: 8px auto 0;
-  background: transparent;
-  border: none;
-  color: var(--text-light);
-  font-size: 13px;
-  cursor: pointer;
-  padding: 4px 12px;
-  border-radius: 12px;
-}
-.btn-reset:hover { background: var(--border); color: var(--text); }
-
-.slider-tip {
+.control-tip {
   text-align: center;
   font-size: 12px;
   color: var(--text-light);
-  margin: 8px 0 4px;
+  margin: 8px 0 12px;
 }
 
-/* 生成结果预览 */
+.btn-row {
+  display: flex;
+  gap: 12px;
+}
+.btn-row .btn { flex: 1; }
+
+.btn-reset, .btn-ghost {
+  background: transparent;
+  border: 1.5px solid var(--border);
+  color: var(--text-light);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 10px 18px;
+  border-radius: 22px;
+  transition: all 0.2s;
+}
+.btn-reset:hover, .btn-ghost:hover {
+  background: var(--border);
+  color: var(--text);
+}
+
+/* ========= 合成结果预览 ========= */
 .photo-result-wrap {
   text-align: center;
   padding-top: 20px;
@@ -880,4 +852,5 @@ html, body {
   margin-left: auto;
   margin-right: auto;
 }
+
 
